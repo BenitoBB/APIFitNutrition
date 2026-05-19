@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="direccion">
+    <select id="obtener-colonias-codigo_postal" resultType="pojo.Direccion" parameterType="int">
+        SELECT c.id as idColonia, c.nombre as colonia, c.ciudad as ciudad, m.nombre as municipio, e.nombre as estado, c.codigo_postal as codigoPostal
+        FROM colonias c 
+        INNER JOIN municipios m ON m.id = c.municipio 
+        INNER JOIN estados e ON e.id = m.estado 
+        WHERE c.codigo_postal = #{codigoPostal}
+    </select>
+</mapper>
