@@ -18,6 +18,22 @@
             #{codigoAcceso}, #{idMedico}, #{estatus}
         )
     </insert>
+    
+    <update id="actualizar" parameterType="pojo.Paciente">
+        UPDATE paciente SET
+            nombre           = #{nombre},
+            primer_apellido  = #{primerApellido},
+            segundo_apellido = #{segundoApellido},
+            fecha_nacimiento = #{fechaNacimiento},
+            sexo             = #{sexo},
+            email            = #{email},
+            telefono         = #{telefono},
+            id_domicilio     = #{idDomicilio},
+            codigo_acceso    = #{codigoAcceso},
+            id_medico        = #{idMedico},
+            estatus          = #{estatus}
+        WHERE id_paciente = #{idPaciente}
+    </update>
 
     <select id="existeEmail" parameterType="map" resultType="int">
         SELECT COUNT(*) FROM paciente
