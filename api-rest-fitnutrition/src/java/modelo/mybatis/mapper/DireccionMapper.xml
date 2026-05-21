@@ -11,4 +11,18 @@
         INNER JOIN estados e ON e.id = m.estado 
         WHERE c.codigo_postal = #{codigoPostal}
     </select>
+    
+     <insert id="insertar" parameterType="map"
+            useGeneratedKeys="true" keyProperty="idDomicilio">
+        INSERT INTO domicilio (calle, numero, id_colonia)
+        VALUES (#{calle}, #{numero}, #{idColonia})
+    </insert>
+
+    <update id="actualizar" parameterType="map">
+        UPDATE domicilio SET
+            calle      = #{calle},
+            numero     = #{numero},
+            id_colonia = #{idColonia}
+        WHERE id_domicilio = #{idDomicilio}
+    </update>
 </mapper>

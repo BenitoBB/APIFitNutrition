@@ -4,6 +4,7 @@
  */
 package dominio;
 
+import dto.PacienteUpdateRequest;
 import dto.Respuesta;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +12,7 @@ import modelo.mybatis.MyBatisUtil;
 import org.apache.ibatis.session.SqlSession;
 import pojo.Paciente;
 import utilidades.Seguridad;
+import utilidades.Validaciones;
 
 public class PacienteImp {
 
@@ -20,6 +22,22 @@ public class PacienteImp {
 
         if (conexionBD != null) {
             try {
+                // Validar formato de teléfono (obligatorio en registro)
+                String errorTelefono = Validaciones.validarTelefono(paciente.getTelefono(), true);
+                if (errorTelefono != null) {
+                    respuesta.setError(true);
+                    respuesta.setMensaje(errorTelefono);
+                    return respuesta;
+                }
+
+                // Validar formato de correo (obligatorio en registro)
+                String errorCorreo = Validaciones.validarCorreo(paciente.getEmail(), true);
+                if (errorCorreo != null) {
+                    respuesta.setError(true);
+                    respuesta.setMensaje(errorCorreo);
+                    return respuesta;
+                }
+                
                 // Validar que el correo no esté ya registrado
                 if (existeEmail(conexionBD, paciente.getEmail(), 0)) {
                     respuesta.setError(true);
@@ -60,36 +78,92 @@ public class PacienteImp {
         return respuesta;
     }
     
-    public static Respuesta actualizarPaciente(Paciente paciente) {
+    public static Respuesta actualizarPaciente(PacienteUpdateRequest req) {
         Respuesta respuesta = new Respuesta();
         SqlSession conexionBD = MyBatisUtil.getSession();
 
         if (conexionBD != null) {
             try {
-                // Verificar que el paciente exista y esté activo
-                Paciente existente = conexionBD.selectOne("paciente.obtenerPorId", paciente.getIdPaciente());
+
+                // 1. Verificar que el paciente exista
+                Paciente existente = conexionBD.selectOne(
+                        "paciente.obtenerPorId", req.getIdPaciente());
                 if (existente == null) {
                     respuesta.setError(true);
                     respuesta.setMensaje("El paciente no existe.");
                     return respuesta;
                 }
 
-                // Validar que el nuevo email no esté siendo usado por OTRO paciente
-                if (existeEmail(conexionBD, paciente.getEmail(), paciente.getIdPaciente())) {
+                // 2. Validar teléfono si viene en la petición
+                String errorTelefono = Validaciones.validarTelefono(req.getTelefono(), false);
+                if (errorTelefono != null) {
+                    respuesta.setError(true);
+                    respuesta.setMensaje(errorTelefono);
+                    return respuesta;
+                }
+
+                // 3. Validar formato de correo
+                String errorCorreo = Validaciones.validarCorreo(req.getEmail(), true);
+                if (errorCorreo != null) {
+                    respuesta.setError(true);
+                    respuesta.setMensaje(errorCorreo);
+                    return respuesta;
+                }
+                
+                // 3. Validar unicidad de email (excluir al propio paciente)
+                if (existeEmail(conexionBD, req.getEmail(), req.getIdPaciente())) {
                     respuesta.setError(true);
                     respuesta.setMensaje("El correo electrónico ya está registrado por otro paciente.");
                     return respuesta;
                 }
 
-                // Si viene un nuevo código de acceso, hashearlo
-                // Si no viene (null o vacío), conservar el que ya está en BD
-                if (paciente.getCodigoAcceso() != null && !paciente.getCodigoAcceso().trim().isEmpty()) {
-                    String codigoHash = Seguridad.hashear(paciente.getCodigoAcceso());
-                    paciente.setCodigoAcceso(codigoHash);
-                } else {
-                    // Preservar el codigo_acceso actual sin modificarlo
-                    paciente.setCodigoAcceso(existente.getCodigoAcceso());
+                // 4. Gestionar domicilio solo si vienen los campos completos
+                Integer idDomicilioFinal = existente.getIdDomicilio(); // conservar por defecto
+
+                if (req.tieneDomicilio()) {
+                    Map<String, Object> paramsDom = new HashMap<>();
+                    paramsDom.put("calle",     req.getCalle());
+                    paramsDom.put("numero",    req.getNumero());
+                    paramsDom.put("idColonia", req.getIdColonia());
+
+                    if (existente.getIdDomicilio() != null) {
+                        // El paciente ya tiene domicilio → solo actualizar
+                        paramsDom.put("idDomicilio", existente.getIdDomicilio());
+                        conexionBD.update("domicilio.actualizar", paramsDom);
+                        idDomicilioFinal = existente.getIdDomicilio();
+                    } else {
+                        // El paciente no tenía domicilio → insertar y capturar la llave generada
+                        conexionBD.insert("domicilio.insertar", paramsDom);
+                        idDomicilioFinal = (Integer) paramsDom.get("idDomicilio");
+                    }
                 }
+                // Si !req.tieneDomicilio() → idDomicilioFinal ya apunta al valor actual; no se toca la tabla.
+
+                // 5. Hashear código de acceso si viene nuevo; si no, preservar el existente
+                String codigoFinal;
+                if (req.getCodigoAcceso() != null && !req.getCodigoAcceso().trim().isEmpty()) {
+                    codigoFinal = Seguridad.hashear(req.getCodigoAcceso());
+                } else {
+                    codigoFinal = existente.getCodigoAcceso();
+                }
+
+                // 6. Construir el Paciente para el UPDATE
+                Paciente paciente = new Paciente(
+                    req.getIdPaciente(),
+                    req.getNombre(),
+                    req.getPrimerApellido(),
+                    req.getSegundoApellido(),
+                    req.getFechaNacimiento(),
+                    req.getSexo(),
+                    null, null, null,          // peso / estatura / talla — nunca se tocan aquí
+                    req.getEmail(),
+                    req.getTelefono(),
+                    idDomicilioFinal,
+                    codigoFinal,
+                    null, null,                // fotografia / fotoBase64
+                    req.getIdMedico(),
+                    req.getEstatus()
+                );
 
                 int filas = conexionBD.update("paciente.actualizar", paciente);
                 conexionBD.commit();
