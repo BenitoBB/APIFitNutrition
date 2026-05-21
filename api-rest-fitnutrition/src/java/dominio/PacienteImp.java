@@ -59,6 +59,63 @@ public class PacienteImp {
         }
         return respuesta;
     }
+    
+    public static Respuesta actualizarPaciente(Paciente paciente) {
+        Respuesta respuesta = new Respuesta();
+        SqlSession conexionBD = MyBatisUtil.getSession();
+
+        if (conexionBD != null) {
+            try {
+                // Verificar que el paciente exista y esté activo
+                Paciente existente = conexionBD.selectOne("paciente.obtenerPorId", paciente.getIdPaciente());
+                if (existente == null) {
+                    respuesta.setError(true);
+                    respuesta.setMensaje("El paciente no existe.");
+                    return respuesta;
+                }
+
+                // Validar que el nuevo email no esté siendo usado por OTRO paciente
+                if (existeEmail(conexionBD, paciente.getEmail(), paciente.getIdPaciente())) {
+                    respuesta.setError(true);
+                    respuesta.setMensaje("El correo electrónico ya está registrado por otro paciente.");
+                    return respuesta;
+                }
+
+                // Si viene un nuevo código de acceso, hashearlo
+                // Si no viene (null o vacío), conservar el que ya está en BD
+                if (paciente.getCodigoAcceso() != null && !paciente.getCodigoAcceso().trim().isEmpty()) {
+                    String codigoHash = Seguridad.hashear(paciente.getCodigoAcceso());
+                    paciente.setCodigoAcceso(codigoHash);
+                } else {
+                    // Preservar el codigo_acceso actual sin modificarlo
+                    paciente.setCodigoAcceso(existente.getCodigoAcceso());
+                }
+
+                int filas = conexionBD.update("paciente.actualizar", paciente);
+                conexionBD.commit();
+
+                if (filas > 0) {
+                    respuesta.setError(false);
+                    respuesta.setMensaje("Paciente actualizado correctamente.");
+                } else {
+                    respuesta.setError(true);
+                    respuesta.setMensaje("No se realizaron cambios.");
+                }
+
+            } catch (Exception e) {
+                conexionBD.rollback();
+                e.printStackTrace();
+                respuesta.setError(true);
+                respuesta.setMensaje(manejarErrorBD(e));
+            } finally {
+                conexionBD.close();
+            }
+        } else {
+            respuesta.setError(true);
+            respuesta.setMensaje("No hay conexión con la base de datos.");
+        }
+        return respuesta;
+    }
 
     // ── Helpers ─────────────────────────────────────────────────────────────
 
