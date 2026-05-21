@@ -6,6 +6,7 @@ package ws;
 
 import com.google.gson.Gson;
 import dominio.PacienteImp;
+import dto.PacienteUpdateRequest;
 import dto.Respuesta;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
@@ -34,7 +35,7 @@ public class PacienteWS {
     @Consumes(MediaType.APPLICATION_JSON)
     public Respuesta actualizarPaciente(String json) {
         Gson gson = new Gson();
-        Paciente paciente = gson.fromJson(json, Paciente.class);
-        return PacienteImp.actualizarPaciente(paciente);
+        PacienteUpdateRequest request = gson.fromJson(json, PacienteUpdateRequest.class);
+        return PacienteImp.actualizarPaciente(request);
     }
 }
