@@ -4,5 +4,40 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="paciente">
+    <insert id="registrar" parameterType="pojo.Paciente"
+            useGeneratedKeys="true" keyProperty="idPaciente">
+        INSERT INTO paciente (
+            nombre, primer_apellido, segundo_apellido,
+            fecha_nacimiento, sexo, peso, estatura, talla,
+            email, telefono, id_domicilio,
+            codigo_acceso, id_medico, estatus
+        ) VALUES (
+            #{nombre}, #{primerApellido}, #{segundoApellido},
+            #{fechaNacimiento}, #{sexo}, #{peso}, #{estatura}, #{talla},
+            #{email}, #{telefono}, #{idDomicilio},
+            #{codigoAcceso}, #{idMedico}, #{estatus}
+        )
+    </insert>
 
+    <select id="existeEmail" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM paciente
+        WHERE email = #{email}
+          AND id_paciente != #{idPaciente}
+    </select>
+    
+     <update id="actualizar" parameterType="pojo.Paciente">
+        UPDATE paciente SET
+            nombre           = #{nombre},
+            primer_apellido  = #{primerApellido},
+            segundo_apellido = #{segundoApellido},
+            fecha_nacimiento = #{fechaNacimiento},
+            sexo             = #{sexo},
+            email            = #{email},
+            telefono         = #{telefono},
+            id_domicilio     = #{idDomicilio},
+            codigo_acceso    = #{codigoAcceso},
+            id_medico        = #{idMedico},
+            estatus          = #{estatus}
+        WHERE id_paciente = #{idPaciente}
+    </update>
 </mapper>
