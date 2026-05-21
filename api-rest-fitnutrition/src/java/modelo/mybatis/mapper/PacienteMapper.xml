@@ -24,20 +24,4 @@
         WHERE email = #{email}
           AND id_paciente != #{idPaciente}
     </select>
-    
-     <update id="actualizar" parameterType="pojo.Paciente">
-        UPDATE paciente SET
-            nombre           = #{nombre},
-            primer_apellido  = #{primerApellido},
-            segundo_apellido = #{segundoApellido},
-            fecha_nacimiento = #{fechaNacimiento},
-            sexo             = #{sexo},
-            email            = #{email},
-            telefono         = #{telefono},
-            id_domicilio     = #{idDomicilio},
-            codigo_acceso    = #{codigoAcceso},
-            id_medico        = #{idMedico},
-            estatus          = #{estatus}
-        WHERE id_paciente = #{idPaciente}
-    </update>
 </mapper>
