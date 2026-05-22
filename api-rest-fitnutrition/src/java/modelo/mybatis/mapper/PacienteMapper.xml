@@ -4,8 +4,7 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="paciente">
-    <insert id="registrar" parameterType="pojo.Paciente"
-            useGeneratedKeys="true" keyProperty="idPaciente">
+    <insert id="registrar" parameterType="pojo.Paciente" useGeneratedKeys="true" keyProperty="idPaciente">
         INSERT INTO paciente (
             nombre, primer_apellido, segundo_apellido,
             fecha_nacimiento, sexo, peso, estatura, talla,
@@ -26,13 +25,23 @@
             segundo_apellido = #{segundoApellido},
             fecha_nacimiento = #{fechaNacimiento},
             sexo             = #{sexo},
-            email            = #{email},
             telefono         = #{telefono},
             id_domicilio     = #{idDomicilio},
-            codigo_acceso    = #{codigoAcceso},
             id_medico        = #{idMedico},
             estatus          = #{estatus}
         WHERE id_paciente = #{idPaciente}
+    </update>
+    
+    <update id="actualizarEmail" parameterType="map">
+        UPDATE paciente SET email = #{nuevoEmail}
+        WHERE id_paciente = #{idPaciente}
+    </update>
+
+    <update id="actualizarNip" parameterType="map">
+        UPDATE paciente
+        SET codigo_acceso = #{nuevoNip}
+        WHERE id_paciente  = #{idPaciente}
+          AND codigo_acceso = #{nipActual}
     </update>
     
     <update id="darDeBaja" parameterType="int">
@@ -61,5 +70,23 @@
         SELECT COUNT(*) FROM paciente
         WHERE email = #{email}
           AND id_paciente != #{idPaciente}
+    </select>
+
+    <select id="login" parameterType="map" resultType="pojo.Paciente">
+        SELECT
+            id_paciente      AS idPaciente,
+            nombre,
+            primer_apellido  AS primerApellido,
+            segundo_apellido AS segundoApellido,
+            fecha_nacimiento AS fechaNacimiento,
+            sexo,
+            email,
+            telefono,
+            id_domicilio     AS idDomicilio,
+            id_medico        AS idMedico,
+            estatus
+        FROM paciente
+        WHERE email         = #{email}
+          AND codigo_acceso = #{codigoAcceso}
     </select>
 </mapper>

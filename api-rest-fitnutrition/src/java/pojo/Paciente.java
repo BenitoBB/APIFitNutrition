@@ -26,6 +26,9 @@ public class Paciente {
     private int idMedico;
     private int estatus; // 1 = Activo, 0 = Inactivo
 
+    public Paciente() {
+    }
+    
     public Paciente(int idPaciente, String nombre, String primerApellido, String segundoApellido, String fechaNacimiento, String sexo, Double peso, Double estatura, Double talla, String email, String telefono, Integer idDomicilio, String codigoAcceso, byte[] fotografia, String fotoBase64, int idMedico, int estatus) {
         this.idPaciente = idPaciente;
         this.nombre = nombre;
