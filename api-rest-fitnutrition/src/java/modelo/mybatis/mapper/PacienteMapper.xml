@@ -72,6 +72,25 @@
           AND id_paciente != #{idPaciente}
     </select>
     
+    <select id="obtenerPerfil" parameterType="int" resultType="pojo.Paciente">
+        SELECT
+            p.id_paciente      AS idPaciente,
+            p.nombre,
+            p.primer_apellido  AS primerApellido,
+            p.segundo_apellido AS segundoApellido,
+            p.fecha_nacimiento AS fechaNacimiento,
+            p.sexo,
+            p.peso,
+            p.estatura,
+            p.talla,
+            p.email,
+            p.telefono,
+            p.id_domicilio     AS idDomicilio,
+            p.estatus
+        FROM paciente p
+        WHERE p.id_paciente = #{idPaciente}
+    </select>
+    
     <select id="buscar" parameterType="map" resultType="pojo.Paciente">
         SELECT
             p.id_paciente      AS idPaciente,

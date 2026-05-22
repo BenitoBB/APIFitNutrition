@@ -58,6 +58,15 @@ public class PacienteWS {
             @QueryParam("idMedico") Integer idMedico) {
         return PacienteImp.buscarPacientes(criterio, idMedico);
     }
+    
+    // ── Móvil ─────────────────────────────────────────────────────────────────
+
+    @Path("perfil/{idPaciente}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Paciente obtenerPerfilPaciente(@PathParam("idPaciente") int idPaciente) {
+        return PacienteImp.obtenerPerfilPaciente(idPaciente);
+    }
 
     @Path("login")
     @POST

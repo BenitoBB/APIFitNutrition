@@ -165,6 +165,8 @@ public class PacienteImp {
         return pacientes;
     }
     
+    // ── Móvil ────────────────────────────────────────────────────────────────
+    
     public static RSAutenticacionPaciente loginPaciente(String email, String nip) {
         RSAutenticacionPaciente respuesta = new RSAutenticacionPaciente();
         respuesta.setError(true);
@@ -207,6 +209,22 @@ public class PacienteImp {
         }
 
         return respuesta;
+    }
+
+    public static Paciente obtenerPerfilPaciente(int idPaciente) {
+        Paciente perfil = null;
+        SqlSession conexion = MyBatisUtil.getSession();
+
+        if (conexion != null) {
+            try {
+                perfil = conexion.selectOne("paciente.obtenerPerfil", idPaciente);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                conexion.close();
+            }
+        }
+        return perfil;
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
