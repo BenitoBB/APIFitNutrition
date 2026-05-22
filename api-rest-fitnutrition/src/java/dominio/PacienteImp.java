@@ -190,6 +190,52 @@ public class PacienteImp {
         }
         return respuesta;
     }
+    
+    public static Respuesta darDeBajaPaciente(int idPaciente) {
+        Respuesta respuesta = new Respuesta();
+        SqlSession conexionBD = MyBatisUtil.getSession();
+
+        if (conexionBD != null) {
+            try {
+                Paciente existente = conexionBD.selectOne("paciente.obtenerPorId", idPaciente);
+
+                if (existente == null) {
+                    respuesta.setError(true);
+                    respuesta.setMensaje("El paciente no existe.");
+                    return respuesta;
+                }
+
+                if (existente.getEstatus() == 0) {
+                    respuesta.setError(true);
+                    respuesta.setMensaje("El paciente ya se encuentra dado de baja.");
+                    return respuesta;
+                }
+
+                int filas = conexionBD.update("paciente.darDeBaja", idPaciente);
+                conexionBD.commit();
+
+                if (filas > 0) {
+                    respuesta.setError(false);
+                    respuesta.setMensaje("Paciente dado de baja correctamente.");
+                } else {
+                    respuesta.setError(true);
+                    respuesta.setMensaje("No se pudo dar de baja al paciente.");
+                }
+
+            } catch (Exception e) {
+                conexionBD.rollback();
+                e.printStackTrace();
+                respuesta.setError(true);
+                respuesta.setMensaje("Error inesperado en la base de datos.");
+            } finally {
+                conexionBD.close();
+            }
+        } else {
+            respuesta.setError(true);
+            respuesta.setMensaje("No hay conexión con la base de datos.");
+        }
+        return respuesta;
+    }
 
     // ── Helpers ─────────────────────────────────────────────────────────────
 
