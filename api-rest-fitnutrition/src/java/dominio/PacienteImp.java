@@ -146,6 +146,25 @@ public class PacienteImp {
         return respuesta;
     }
     
+    public static List<Paciente> buscarPacientes(String criterio, Integer idMedico) {
+        List<Paciente> pacientes = null;
+        SqlSession conexion = MyBatisUtil.getSession();
+
+        if (conexion != null) {
+            try {
+                Map<String, Object> params = new HashMap<>();
+                params.put("criterio", criterio);
+                params.put("idMedico", idMedico); // null o 0 → admin, sin filtro
+                pacientes = conexion.selectList("paciente.buscar", params);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                conexion.close();
+            }
+        }
+        return pacientes;
+    }
+    
     public static RSAutenticacionPaciente loginPaciente(String email, String nip) {
         RSAutenticacionPaciente respuesta = new RSAutenticacionPaciente();
         respuesta.setError(true);

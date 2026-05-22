@@ -71,6 +71,40 @@
         WHERE email = #{email}
           AND id_paciente != #{idPaciente}
     </select>
+    
+    <select id="buscar" parameterType="map" resultType="pojo.Paciente">
+        SELECT
+            p.id_paciente      AS idPaciente,
+            p.nombre,
+            p.primer_apellido  AS primerApellido,
+            p.segundo_apellido AS segundoApellido,
+            p.fecha_nacimiento AS fechaNacimiento,
+            p.sexo,
+            p.peso,
+            p.estatura,
+            p.talla,
+            p.email,
+            p.telefono,
+            p.id_domicilio     AS idDomicilio,
+            p.estatus,
+            d.calle,
+            d.numero,
+            d.id_colonia       AS idColonia
+        FROM paciente p
+        LEFT JOIN domicilio d ON d.id_domicilio = p.id_domicilio
+        WHERE (
+            p.nombre           LIKE CONCAT('%', #{criterio}, '%')
+            OR p.primer_apellido  LIKE CONCAT('%', #{criterio}, '%')
+            OR p.segundo_apellido LIKE CONCAT('%', #{criterio}, '%')
+            OR CONCAT_WS(' ', p.nombre, p.primer_apellido, p.segundo_apellido)
+               LIKE CONCAT('%', #{criterio}, '%')
+        )
+        <if test="idMedico != null and idMedico > 0">
+            AND p.id_medico = #{idMedico}
+        </if>
+        AND p.estatus = 1
+        ORDER BY p.primer_apellido, p.segundo_apellido, p.nombre
+    </select>
 
     <select id="login" parameterType="map" resultType="pojo.Paciente">
         SELECT

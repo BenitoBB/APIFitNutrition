@@ -49,6 +49,15 @@ public class PacienteWS {
     public Respuesta darDeBajaPaciente(@PathParam("idPaciente") int idPaciente) {
         return PacienteImp.darDeBajaPaciente(idPaciente);
     }
+    
+    @Path("buscar")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Paciente> buscarPacientes(
+            @QueryParam("criterio") String  criterio,
+            @QueryParam("idMedico") Integer idMedico) {
+        return PacienteImp.buscarPacientes(criterio, idMedico);
+    }
 
     @Path("login")
     @POST
