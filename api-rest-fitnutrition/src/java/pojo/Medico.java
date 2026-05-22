@@ -19,6 +19,9 @@ public class Medico {
     private int esAdministrador; // 0 = Médico, 1 = Administrador
     private int estatus; // 1 = Activo, 0 = Inactivo
 
+    public Medico() {
+    }
+
     public Medico(int idMedico, String nombre, String primerApellido, String segundoApellido, String fechaNacimiento, String sexo, Integer idDomicilio, String noPersonal, String cedulaProfesional, String contrasena, byte[] fotografia, String fotoBase64, int esAdministrador, int estatus) {
         this.idMedico = idMedico;
         this.nombre = nombre;

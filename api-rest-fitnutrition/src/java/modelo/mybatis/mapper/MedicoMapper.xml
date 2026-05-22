@@ -5,4 +5,19 @@
 
 <mapper namespace="medico">
 
+    <insert id="registrar" parameterType="pojo.Medico"
+            useGeneratedKeys="true" keyProperty="idMedico">
+        INSERT INTO medico (
+            nombre, primer_apellido, segundo_apellido,
+            fecha_nacimiento, sexo, id_domicilio,
+            no_personal, cedula_profesional, contrasena,
+            es_administrador, estatus
+        ) VALUES (
+            #{nombre}, #{primerApellido}, #{segundoApellido},
+            #{fechaNacimiento}, #{sexo}, #{idDomicilio},
+            #{noPersonal}, #{cedulaProfesional}, #{contrasena},
+            #{esAdministrador}, #{estatus}
+        )
+    </insert>
+
 </mapper>
