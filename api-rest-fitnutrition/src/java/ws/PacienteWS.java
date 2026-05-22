@@ -67,6 +67,36 @@ public class PacienteWS {
     public Paciente obtenerPerfilPaciente(@PathParam("idPaciente") int idPaciente) {
         return PacienteImp.obtenerPerfilPaciente(idPaciente);
     }
+    
+    
+    @Path("editar-perfil")
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Respuesta editarPerfilPaciente(String json) {
+        return PacienteImp.editarPerfilPaciente(new Gson().fromJson(json, Paciente.class));
+    }
+
+    @Path("actualizar-email")
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    public Respuesta actualizarEmail(
+            @FormParam("idPaciente")  int    idPaciente,
+            @FormParam("emailActual") String emailActual,
+            @FormParam("nuevoEmail")  String nuevoEmail) {
+        return PacienteImp.actualizarEmail(idPaciente, emailActual, nuevoEmail);
+    }
+
+    @Path("actualizar-nip")
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    public Respuesta actualizarNip(
+            @FormParam("idPaciente") int    idPaciente,
+            @FormParam("nipActual")  String nipActual,
+            @FormParam("nuevoNip")   String nuevoNip) {
+        return PacienteImp.actualizarNip(idPaciente, nipActual, nuevoNip);
+    }
+   
 
     @Path("login")
     @POST

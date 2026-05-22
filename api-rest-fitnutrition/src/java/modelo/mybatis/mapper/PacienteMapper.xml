@@ -91,6 +91,19 @@
         WHERE p.id_paciente = #{idPaciente}
     </select>
     
+    <update id="editarPerfil" parameterType="pojo.Paciente">
+        UPDATE paciente SET
+            nombre           = #{nombre},
+            primer_apellido  = #{primerApellido},
+            segundo_apellido = #{segundoApellido},
+            fecha_nacimiento = #{fechaNacimiento},
+            sexo             = #{sexo},
+            telefono         = #{telefono},
+            id_domicilio     = #{idDomicilio}
+        WHERE id_paciente = #{idPaciente}
+          AND estatus = 1
+    </update>
+    
     <select id="buscar" parameterType="map" resultType="pojo.Paciente">
         SELECT
             p.id_paciente      AS idPaciente,

@@ -226,6 +226,169 @@ public class PacienteImp {
         }
         return perfil;
     }
+    
+    public static Respuesta editarPerfilPaciente(Paciente paciente) {
+        Respuesta respuesta = new Respuesta();
+        respuesta.setError(true);
+        SqlSession conexion = MyBatisUtil.getSession();
+
+        if (conexion != null) {
+            try {
+                if (!existePaciente(conexion, paciente.getIdPaciente())) {
+                    respuesta.setMensaje("El paciente no existe.");
+                    return respuesta;
+                }
+
+                String errorTel = Validaciones.validarTelefono(paciente.getTelefono(), false);
+                if (errorTel != null) {
+                    respuesta.setMensaje(errorTel);
+                    return respuesta;
+                }
+
+                int filasAfectadas = conexion.update("paciente.editarPerfil", paciente);
+
+                if (filasAfectadas > 0) {
+                    conexion.commit();
+                    respuesta.setError(false);
+                    respuesta.setMensaje("Perfil actualizado correctamente.");
+                } else {
+                    // filasAfectadas == 0 puede significar que el estatus es 0
+                    respuesta.setMensaje("No se pudo actualizar el perfil. Verifique que la cuenta esté activa.");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                respuesta.setMensaje("Error interno al actualizar el perfil.");
+            } finally {
+                conexion.close();
+            }
+        } else {
+            respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+        }
+        return respuesta;
+    }
+
+    public static Respuesta actualizarEmail(int idPaciente, String emailActual, String nuevoEmail) {
+        Respuesta respuesta = new Respuesta();
+        respuesta.setError(true);
+        SqlSession conexion = MyBatisUtil.getSession();
+
+        if (conexion != null) {
+            try {
+                Paciente existente = conexion.selectOne("paciente.obtenerPorId", idPaciente);
+                if (existente == null) {
+                    respuesta.setMensaje("El paciente no existe.");
+                    return respuesta;
+                }
+
+                if (!existente.getEmail().equalsIgnoreCase(emailActual)) {
+                    respuesta.setMensaje("El correo actual ingresado no es correcto.");
+                    return respuesta;
+                }
+                
+                if (existente.getEmail().equalsIgnoreCase(nuevoEmail)) {
+                    respuesta.setMensaje("El nuevo correo electrónico es igual al actual.");
+                    return respuesta;
+                }
+
+                String errorFormato = Validaciones.validarCorreo(nuevoEmail, true);
+                if (errorFormato != null) {
+                    respuesta.setMensaje(errorFormato);
+                    return respuesta;
+                }
+
+                if (existeEmail(conexion, nuevoEmail, idPaciente)) {
+                    respuesta.setMensaje("El correo electrónico ya está registrado por otro paciente.");
+                    return respuesta;
+                }
+
+                Map<String, Object> params = new HashMap<>();
+                params.put("idPaciente", idPaciente);
+                params.put("nuevoEmail", nuevoEmail);
+
+                int filasAfectadas = conexion.update("paciente.actualizarEmail", params);
+
+                if (filasAfectadas > 0) {
+                    conexion.commit();
+                    respuesta.setError(false);
+                    respuesta.setMensaje("Correo electrónico actualizado correctamente.");
+                } else {
+                    respuesta.setMensaje("No se pudo actualizar el correo electrónico.");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                respuesta.setMensaje("Error interno al actualizar el correo.");
+            } finally {
+                conexion.close();
+            }
+        } else {
+            respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+        }
+        return respuesta;
+    }
+
+    public static Respuesta actualizarNip(int idPaciente, String nipActual, String nuevoNip) {
+        Respuesta respuesta = new Respuesta();
+        SqlSession conexion = MyBatisUtil.getSession();
+
+        if (conexion != null) {
+            try {
+
+                if (!Validaciones.esNumericoConLongitud(nuevoNip, 4)) {
+                    respuesta.setError(true);
+                    respuesta.setMensaje("El nuevo NIP debe ser de exactamente 4 dígitos numéricos.");
+                    return respuesta;
+                }
+
+                Paciente paciente = conexion.selectOne("paciente.obtenerPorId", idPaciente);
+
+                if (paciente == null) {
+                    respuesta.setError(true);
+                    respuesta.setMensaje("El paciente no existe.");
+                    return respuesta;
+                }
+
+                String hashActual = Seguridad.hashear(nipActual);
+                String hashNuevo = Seguridad.hashear(nuevoNip);
+
+                if (hashActual.equals(hashNuevo)) {
+                    respuesta.setError(true);
+                    respuesta.setMensaje("El nuevo NIP no puede ser igual al actual.");
+                    return respuesta;
+                }
+
+                Map<String, Object> params = new HashMap<>();
+                params.put("idPaciente", idPaciente);
+                params.put("nipActual", hashActual);
+                params.put("nuevoNip", hashNuevo);
+
+                int filas = conexion.update("paciente.actualizarNip", params);
+                conexion.commit();
+
+                if (filas > 0) {
+                    respuesta.setError(false);
+                    respuesta.setMensaje("NIP actualizado correctamente.");
+                } else {
+                    respuesta.setError(true);
+                    respuesta.setMensaje("El NIP actual es incorrecto.");
+                }
+
+            } catch (Exception e) {
+                conexion.rollback();
+                e.printStackTrace();
+
+                respuesta.setError(true);
+                respuesta.setMensaje("Error al cambiar el NIP.");
+
+            } finally {
+                conexion.close();
+            }
+        } else {
+            respuesta.setError(true);
+            respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+        }
+
+        return respuesta;
+    }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
