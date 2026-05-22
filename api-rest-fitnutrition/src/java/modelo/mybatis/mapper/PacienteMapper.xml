@@ -34,6 +34,28 @@
             estatus          = #{estatus}
         WHERE id_paciente = #{idPaciente}
     </update>
+    
+    <update id="darDeBaja" parameterType="int">
+        UPDATE paciente SET estatus = 0
+        WHERE id_paciente = #{idPaciente}
+    </update>
+    
+    <select id="obtenerPorId" parameterType="int" resultType="pojo.Paciente">
+        SELECT
+            id_paciente      AS idPaciente,
+            nombre,
+            primer_apellido  AS primerApellido,
+            segundo_apellido AS segundoApellido,
+            fecha_nacimiento AS fechaNacimiento,
+            sexo, peso, estatura, talla,
+            email, telefono,
+            id_domicilio     AS idDomicilio,
+            codigo_acceso    AS codigoAcceso,
+            id_medico        AS idMedico,
+            estatus
+        FROM paciente
+        WHERE id_paciente = #{idPaciente}
+    </select>
 
     <select id="existeEmail" parameterType="map" resultType="int">
         SELECT COUNT(*) FROM paciente
