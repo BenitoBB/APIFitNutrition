@@ -54,9 +54,87 @@ public class MedicoImp {
         }
         return respuesta;
     }
-
     
+    public static Respuesta editarMedico(Medico medico) {
+        Respuesta respuesta = new Respuesta();
+        respuesta.setError(true);
+        SqlSession conexion = MyBatisUtil.getSession();
 
+        if (conexion != null) {
+            try {
+                if (!existeMedico(conexion, medico.getIdMedico())) {
+                    respuesta.setMensaje("El médico que intenta editar no existe.");
+                    return respuesta;
+                }
+
+                // Validar unicidad excluyendo al propio médico
+                if (existeNoPersonal(conexion, medico.getNoPersonal(), medico.getIdMedico())) {
+                    respuesta.setMensaje("El número de personal ya está registrado por otro médico.");
+                    return respuesta;
+                }
+
+                if (existeCedula(conexion, medico.getCedulaProfesional(), medico.getIdMedico())) {
+                    respuesta.setMensaje("La cédula profesional ya está registrada por otro médico.");
+                    return respuesta;
+                }
+
+                int filas = conexion.update("medico.editar", medico);
+
+                if (filas > 0) {
+                    conexion.commit();
+                    respuesta.setError(false);
+                    respuesta.setMensaje("Médico actualizado correctamente.");
+                } else {
+                    respuesta.setMensaje("No se pudo actualizar la información del médico.");
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                respuesta.setMensaje(manejarErrorBD(e));
+            } finally {
+                conexion.close();
+            }
+        } else {
+            respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+        }
+        return respuesta;
+    }
+    
+    public static Respuesta cambiarContrasena(int idMedico, String contrasenaActual, String contrasenaNueva) {
+        Respuesta respuesta = new Respuesta();
+        SqlSession conexion = MyBatisUtil.getSession();
+
+        if (conexion != null) {
+            try {
+                Map<String, Object> params = new HashMap<>();
+                params.put("idMedico",         idMedico);
+                params.put("contrasenaActual",  Seguridad.hashear(contrasenaActual));
+                params.put("contrasenaNueva",   Seguridad.hashear(contrasenaNueva));
+
+                int filas = conexion.update("medico.cambiarContrasena", params);
+                conexion.commit();
+
+                if (filas > 0) {
+                    respuesta.setError(false);
+                    respuesta.setMensaje("Contraseña actualizada correctamente.");
+                } else {
+                    respuesta.setError(true);
+                    respuesta.setMensaje("La contraseña actual es incorrecta.");
+                }
+            } catch (Exception e) {
+                conexion.rollback();
+                e.printStackTrace();
+                respuesta.setError(true);
+                respuesta.setMensaje("Error al cambiar la contraseña.");
+            } finally {
+                conexion.close();
+            }
+        } else {
+            respuesta.setError(true);
+            respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+        }
+        return respuesta;
+    }
+    
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     private static boolean existeMedico(SqlSession conexion, int idMedico) {

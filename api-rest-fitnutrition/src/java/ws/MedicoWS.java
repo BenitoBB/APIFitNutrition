@@ -24,4 +24,22 @@ public class MedicoWS {
         return MedicoImp.registrarMedico(new Gson().fromJson(json, Medico.class));
     }
 
+    @Path("editar")
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Respuesta editarMedico(String json) {
+        return MedicoImp.editarMedico(new Gson().fromJson(json, Medico.class));
+    }
+    
+    @Path("cambiar-contrasena")
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    public Respuesta cambiarContrasena(
+            @FormParam("idMedico")          int    idMedico,
+            @FormParam("contrasenaActual")  String contrasenaActual,
+            @FormParam("contrasenaNueva")   String contrasenaNueva) {
+        return MedicoImp.cambiarContrasena(idMedico, contrasenaActual, contrasenaNueva);
+    }
+
 }

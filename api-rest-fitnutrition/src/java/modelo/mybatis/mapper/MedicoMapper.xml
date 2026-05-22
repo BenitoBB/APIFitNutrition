@@ -19,5 +19,55 @@
             #{esAdministrador}, #{estatus}
         )
     </insert>
+    
+    <update id="editar" parameterType="pojo.Medico">
+        UPDATE medico SET
+            nombre             = #{nombre},
+            primer_apellido    = #{primerApellido},
+            segundo_apellido   = #{segundoApellido},
+            fecha_nacimiento   = #{fechaNacimiento},
+            sexo               = #{sexo},
+            id_domicilio       = #{idDomicilio},
+            no_personal        = #{noPersonal},
+            cedula_profesional = #{cedulaProfesional},
+            es_administrador   = #{esAdministrador},
+            estatus            = #{estatus}
+        WHERE id_medico = #{idMedico}
+    </update>
 
+    <select id="obtenerPorId" parameterType="int" resultType="pojo.Medico">
+        SELECT
+            id_medico          AS idMedico,
+            nombre,
+            primer_apellido    AS primerApellido,
+            segundo_apellido   AS segundoApellido,
+            fecha_nacimiento   AS fechaNacimiento,
+            sexo,
+            id_domicilio       AS idDomicilio,
+            no_personal        AS noPersonal,
+            cedula_profesional AS cedulaProfesional,
+            es_administrador   AS esAdministrador,
+            estatus
+        FROM medico
+        WHERE id_medico = #{idMedico}
+    </select>
+
+    <select id="existeNoPersonal" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM medico
+        WHERE no_personal = #{noPersonal}
+          AND id_medico  != #{idMedico}
+    </select>
+
+    <select id="existeCedula" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM medico
+        WHERE cedula_profesional = #{cedulaProfesional}
+          AND id_medico         != #{idMedico}
+    </select>
+    
+    <update id="cambiarContrasena" parameterType="map">
+        UPDATE medico
+        SET contrasena = #{contrasenaNueva}
+        WHERE id_medico  = #{idMedico}
+          AND contrasena = #{contrasenaActual}
+    </update>
 </mapper>
