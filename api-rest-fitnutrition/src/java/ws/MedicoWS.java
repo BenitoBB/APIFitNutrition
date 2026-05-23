@@ -2,6 +2,7 @@ package ws;
 
 import com.google.gson.Gson;
 import dominio.MedicoImp;
+import dto.RQBajaMedico;
 import dto.Respuesta;
 import java.util.ArrayList;
 import java.util.List;
@@ -49,6 +50,30 @@ public class MedicoWS {
         }
 
         return MedicoImp.buscarMedicos(criterio);
+    }
+    
+    @POST
+    @Path("baja")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Respuesta baja(RQBajaMedico request) {
+        if (request == null) {
+            return new Respuesta(true, "Datos de baja no proporcionados.");
+        }
+
+        if (request.getEsAdministrador() == null || request.getEsAdministrador() != 1) {
+            return new Respuesta(true, "Acceso denegado.");
+        }
+
+        if (request.getIdMedicoBaja() == null || request.getIdMedicoBaja() <= 0) {
+            return new Respuesta(true, "El medico a dar de baja es obligatorio.");
+        }
+
+        if (request.getIdMedicoNuevo() == null || request.getIdMedicoNuevo() <= 0) {
+            return new Respuesta(true, "El medico destino es obligatorio.");
+        }
+
+        return MedicoImp.bajaMedicoReasignar(request.getIdMedicoBaja(), request.getIdMedicoNuevo());
     }
     
     @Path("cambiar-contrasena")

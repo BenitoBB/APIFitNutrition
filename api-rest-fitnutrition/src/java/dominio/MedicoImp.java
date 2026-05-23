@@ -158,6 +158,61 @@ public class MedicoImp {
         return medicos;
     }
     
+    public static Respuesta bajaMedicoReasignar(int idMedicoBaja, int idMedicoNuevo) {
+        Respuesta respuesta = new Respuesta();
+        respuesta.setError(true);
+
+        if (idMedicoBaja == idMedicoNuevo) {
+            respuesta.setMensaje("El medico destino debe ser distinto al medico a dar de baja.");
+            return respuesta;
+        }
+
+        SqlSession conexionBD = MyBatisUtil.getSession();
+        if (conexionBD == null) {
+            respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+            return respuesta;
+        }
+
+        try {
+            Map<String, Object> parametros = new HashMap<>();
+            parametros.put("idMedicoBaja", idMedicoBaja);
+            parametros.put("idMedicoNuevo", idMedicoNuevo);
+
+            Integer medicoBajaValido = conexionBD.selectOne("medico.validarMedicoBaja", idMedicoBaja);
+            if (medicoBajaValido == null || medicoBajaValido == 0) {
+                respuesta.setMensaje("El medico a dar de baja no existe, esta inactivo o es administrador.");
+                return respuesta;
+            }
+
+            Integer medicoDestinoValido = conexionBD.selectOne("medico.validarMedicoDestino", idMedicoNuevo);
+            if (medicoDestinoValido == null || medicoDestinoValido == 0) {
+                respuesta.setMensaje("El medico destino no existe, esta inactivo o es administrador.");
+                return respuesta;
+            }
+
+            conexionBD.insert("medico.registrarHistorialReasignacionBaja", parametros);
+            conexionBD.update("medico.reasignarPacientesActivosMedico", parametros);
+
+            int filasAfectadas = conexionBD.update("medico.bajaLogicaMedico", idMedicoBaja);
+            if (filasAfectadas > 0) {
+                conexionBD.commit();
+                respuesta.setError(false);
+                respuesta.setMensaje("Medico dado de baja y pacientes reasignados exitosamente.");
+            } else {
+                conexionBD.rollback();
+                respuesta.setMensaje("No fue posible dar de baja al medico.");
+            }
+        } catch (Exception e) {
+            conexionBD.rollback();
+            e.printStackTrace();
+            respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+        } finally {
+            conexionBD.close();
+        }
+
+        return respuesta;
+    }
+    
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     private static boolean existeMedico(SqlSession conexion, int idMedico) {

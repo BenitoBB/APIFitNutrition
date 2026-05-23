@@ -97,4 +97,52 @@
         </where>
         ORDER BY primer_apellido, nombre 
     </select>
+    
+     <select id="validarMedicoBaja" resultType="int" parameterType="int">
+        SELECT COUNT(*)
+        FROM medico
+        WHERE id_medico = #{idMedico}
+            AND estatus = 1
+            AND es_administrador = 0
+    </select>
+
+    <select id="validarMedicoDestino" resultType="int" parameterType="int">
+        SELECT COUNT(*)
+        FROM medico
+        WHERE id_medico = #{idMedico}
+            AND estatus = 1
+            AND es_administrador = 0
+    </select>
+
+    <insert id="registrarHistorialReasignacionBaja" parameterType="map">
+        INSERT INTO historial_reasignacion (
+            id_paciente,
+            id_medico_anterior,
+            id_medico_nuevo,
+            motivo
+        )
+        SELECT
+            id_paciente,
+            #{idMedicoBaja},
+            #{idMedicoNuevo},
+            'Baja lógica de médico'
+        FROM paciente
+        WHERE id_medico = #{idMedicoBaja}
+            AND estatus = 1
+    </insert>
+
+    <update id="reasignarPacientesActivosMedico" parameterType="map">
+        UPDATE paciente
+        SET id_medico = #{idMedicoNuevo}
+        WHERE id_medico = #{idMedicoBaja}
+            AND estatus = 1
+    </update>
+
+    <update id="bajaLogicaMedico" parameterType="int">
+        UPDATE medico
+        SET estatus = 0
+        WHERE id_medico = #{idMedico}
+            AND estatus = 1
+            AND es_administrador = 0
+    </update>
 </mapper>
