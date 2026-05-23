@@ -4,5 +4,8 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="cita">
-
+    <insert id="crearCita" parameterType="pojo.Cita">
+        INSERT INTO cita (fecha_cita, hora_cita, id_paciente, id_medico, observaciones, estatus) 
+        VALUES (#{fechaCita}, #{horaCita}, #{idPaciente}, #{idMedico}, #{observaciones}, 'Confirmada')
+    </insert>
 </mapper>

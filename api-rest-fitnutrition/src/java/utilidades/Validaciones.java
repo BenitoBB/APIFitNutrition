@@ -53,4 +53,81 @@ public class Validaciones {
         }
         return null;
     }
+    
+    // Utilizado para Cita
+    public static String formatearFechaISO(String fechaCitaStr) {
+        if (esVacio(fechaCitaStr)) {
+            return null;
+        }
+        try {
+            java.time.LocalDate fecha;
+            if (fechaCitaStr.contains("-")) {
+                fecha = java.time.LocalDate.parse(fechaCitaStr.trim(), java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            } else if (fechaCitaStr.contains("/")) {
+                fecha = java.time.LocalDate.parse(fechaCitaStr.trim(), java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+            } else {
+                return null;
+            }
+            return fecha.toString();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+    
+    // Utilizado para Cita
+    public static boolean esFechaCitaValida(String fechaCitaStr) {
+        String iso = formatearFechaISO(fechaCitaStr);
+        if (iso == null) {
+            return false;
+        }
+        java.time.LocalDate fecha = java.time.LocalDate.parse(iso);
+        java.time.LocalDate hoyMasUno = java.time.LocalDate.now().plusDays(1);
+        return !fecha.isBefore(hoyMasUno);
+    }
+    
+    // Utilizado para Cita
+    public static boolean esHoraValida(String horaCitaStr) {
+        if (esVacio(horaCitaStr)) {
+            return false;
+        }
+        try {
+            java.time.LocalTime hora;
+            String trimmed = horaCitaStr.trim();
+            if (trimmed.length() == 5) {
+                hora = java.time.LocalTime.parse(trimmed, java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+            } else if (trimmed.length() == 8) {
+                hora = java.time.LocalTime.parse(trimmed, java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"));
+            } else {
+                return false;
+            }
+            
+            // RN-08: Hora entre 07:00:00 y 20:30:00
+            return !hora.isBefore(java.time.LocalTime.of(7, 0)) && !hora.isAfter(java.time.LocalTime.of(20, 30));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    
+    // Utilizado para Cita
+    public static boolean esBloque30Minutos(String horaCitaStr) {
+        if (esVacio(horaCitaStr)) {
+            return false;
+        }
+        try {
+            java.time.LocalTime hora;
+            String trimmed = horaCitaStr.trim();
+            if (trimmed.length() == 5) {
+                hora = java.time.LocalTime.parse(trimmed, java.time.format.DateTimeFormatter.ofPattern("HH:mm"));
+            } else if (trimmed.length() == 8) {
+                hora = java.time.LocalTime.parse(trimmed, java.time.format.DateTimeFormatter.ofPattern("HH:mm:ss"));
+            } else {
+                return false;
+            }
+            
+            // RN-08: Minutos 00 o 30
+            return hora.getMinute() == 0 || hora.getMinute() == 30;
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

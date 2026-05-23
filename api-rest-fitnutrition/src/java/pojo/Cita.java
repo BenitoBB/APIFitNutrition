@@ -15,6 +15,9 @@ public class Cita {
     private String motivoCancelacion;
     private String fechaCreacion; // Mapeado como String
 
+    public Cita() {
+    }
+
     public Cita(int idCita, String fechaCita, String horaCita, int idPaciente, int idMedico, String observaciones, String estatus, String motivoCancelacion, String fechaCreacion) {
         this.idCita = idCita;
         this.fechaCita = fechaCita;
