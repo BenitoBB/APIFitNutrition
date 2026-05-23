@@ -68,4 +68,61 @@ public class ConsultaWS {
 
         return ConsultaImp.registrarConsulta(consulta);
     }
+    
+    @Path("modificar")
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Respuesta modificarConsulta(Consulta consulta) {
+
+        Respuesta respuesta = new Respuesta();
+
+        if (consulta == null) {
+
+            respuesta.setError(true);
+            respuesta.setMensaje(
+                    "La información de la consulta es obligatoria"
+            );
+
+            return respuesta;
+        }
+
+        if (consulta.getIdConsulta() <= 0) {
+
+            respuesta.setError(true);
+            respuesta.setMensaje(
+                    "El idConsulta es obligatorio"
+            );
+
+            return respuesta;
+        }
+
+        /*
+     * Recalcular IMC automáticamente
+         */
+        double imc = consulta.getPeso()
+                / (consulta.getTalla() * consulta.getTalla());
+
+        consulta.setImc(imc);
+
+        boolean resultado
+                = ConsultaImp.modificarConsulta(consulta);
+
+        if (resultado) {
+
+            respuesta.setError(false);
+            respuesta.setMensaje(
+                    "Consulta modificada correctamente"
+            );
+
+        } else {
+
+            respuesta.setError(true);
+            respuesta.setMensaje(
+                    "Error al modificar la consulta o no existe esa consulta"
+            );
+        }
+
+        return respuesta;
+    }
 }

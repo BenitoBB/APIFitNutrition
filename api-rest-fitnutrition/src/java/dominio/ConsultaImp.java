@@ -61,5 +61,40 @@ public class ConsultaImp {
 
         return respuesta;
     }
+    
+    public static boolean modificarConsulta(Consulta consulta) {
+
+        boolean resultado = false;
+
+        SqlSession conexionBD = MyBatisUtil.getSession();
+
+        if (conexionBD != null) {
+
+            try {
+
+                int filasAfectadas = conexionBD.update(
+                        "consulta.modificar-consulta",
+                        consulta
+                );
+
+                conexionBD.commit();
+
+                if (filasAfectadas > 0) {
+                    resultado = true;
+                }
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+                conexionBD.rollback();
+
+            } finally {
+
+                conexionBD.close();
+            }
+        }
+
+        return resultado;
+    }
 
 }

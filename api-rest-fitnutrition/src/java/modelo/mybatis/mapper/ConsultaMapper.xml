@@ -34,4 +34,18 @@
         )
 
     </insert>
+    
+    <update id="modificar-consulta"
+            parameterType="pojo.Consulta">
+
+        UPDATE consulta
+        SET
+        peso = #{peso},
+        talla = #{talla},
+        imc = #{imc},
+        id_dieta = #{idDieta},
+        observaciones = #{observaciones}
+        WHERE id_consulta = #{idConsulta}
+
+    </update>
 </mapper>
