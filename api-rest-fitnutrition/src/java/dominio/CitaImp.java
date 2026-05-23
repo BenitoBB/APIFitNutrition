@@ -5,11 +5,14 @@
 package dominio;
 
 import dto.Respuesta;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import modelo.mybatis.MyBatisUtil;
 import org.apache.ibatis.session.SqlSession;
 import pojo.Cita;
+import pojo.CitaDetalle;
 import utilidades.Constantes;
 
 /**
@@ -62,5 +65,47 @@ public class CitaImp {
         }
 
         return respuesta;
-    }   
+    }
+    
+    public static Cita buscarCitaPorId(int idCita) {
+        SqlSession conexionBD = MyBatisUtil.getSession();
+        if (conexionBD != null) {
+            try {
+                return conexionBD.selectOne("cita.buscarCitaPorId", idCita);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                conexionBD.close();
+            }
+        }
+        return null;
+    }
+    
+    public static Respuesta modificarCita(Cita cita) {
+        Respuesta respuesta = new Respuesta();
+        respuesta.setError(true);
+
+        SqlSession conexionBD = MyBatisUtil.getSession();
+        if (conexionBD == null) {
+            respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+            return respuesta;
+        }
+        try {
+            int filasAfectadas = conexionBD.update("cita.modificarCita", cita);
+            if (filasAfectadas > 0) {
+                conexionBD.commit();
+                respuesta.setError(false);
+                respuesta.setMensaje("Cita modificada exitosamente.");
+            } else {
+                respuesta.setMensaje("No fue posible modificar la cita.");
+            }
+        } catch (Exception e) {
+            conexionBD.rollback();
+            e.printStackTrace();
+            respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+        } finally {
+            conexionBD.close();
+        }
+        return respuesta;
+    }
 }

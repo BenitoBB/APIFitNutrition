@@ -6,12 +6,17 @@ package ws;
 
 import dominio.CitaImp;
 import dto.Respuesta;
+import java.util.List;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import pojo.Cita;
+import pojo.CitaDetalle;
 import utilidades.Validaciones;
 
 /**
@@ -70,5 +75,84 @@ public class CitaWS {
         }
 
         return CitaImp.crearCita(cita);
+    }
+    
+    @PUT
+    @Path("modificar")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Respuesta modificar(Cita cita) {
+
+        // ── Validación básica de entrada ──────────────────────────────────────
+        if (cita == null || cita.getIdCita() <= 0) {
+            return new Respuesta(true, "El ID de la cita es obligatorio.");
+        }
+
+        // Verificar que al menos un campo a modificar viene en el request
+        boolean sinCampos = Validaciones.esVacio(cita.getFechaCita())
+                && Validaciones.esVacio(cita.getHoraCita())
+                && cita.getObservaciones() == null;
+        if (sinCampos) {
+            return new Respuesta(true, "Debe enviar al menos un campo a modificar.");
+        }
+
+        // ── Verificar que la cita existe ──────────────────────────────────────
+        Cita citaExistente = CitaImp.buscarCitaPorId(cita.getIdCita());
+        if (citaExistente == null) {
+            return new Respuesta(true, "La cita no existe.");
+        }
+
+        // ── RF-08: Solo modificable si estatus es Confirmada o Reagendada ─────
+        String estatus = citaExistente.getEstatus();
+        if (!"Confirmada".equals(estatus) && !"Reagendada".equals(estatus)) {
+            return new Respuesta(true,
+                    "Solo se pueden modificar citas con estatus 'Confirmada' o 'Reagendada'.");
+        }
+
+        // ── Validaciones de fecha (solo si se envía) ──────────────────────────
+        if (!Validaciones.esVacio(cita.getFechaCita())) {
+
+            // RN-07: fecha >= hoy + 1
+            if (!Validaciones.esFechaCitaValida(cita.getFechaCita())) {
+                return new Respuesta(true,
+                        "La cita debe agendarse con al menos 1 día de antelación.");
+            }
+
+            // Normalizar a yyyy-MM-dd
+            String fechaFormateada = Validaciones.formatearFechaISO(cita.getFechaCita());
+            if (fechaFormateada == null) {
+                return new Respuesta(true, "Formato de fecha no válido.");
+            }
+            cita.setFechaCita(fechaFormateada);
+
+            // RN-06: UNIQUE (id_paciente, fecha_cita) — solo si cambia la fecha
+            if (!fechaFormateada.equals(citaExistente.getFechaCita())) {
+                Cita citaDuplicada = CitaImp.buscarCitaPorPacienteYFecha(
+                        citaExistente.getIdPaciente(), fechaFormateada);
+                if (citaDuplicada != null) {
+                    return new Respuesta(true,
+                            "El paciente ya tiene una cita agendada en esa fecha.");
+                }
+            }
+        }
+
+        // ── Validaciones de hora (solo si se envía) ───────────────────────────
+        if (!Validaciones.esVacio(cita.getHoraCita())) {
+
+            // RN-08: rango 07:00 – 20:30
+            if (!Validaciones.esHoraValida(cita.getHoraCita())) {
+                return new Respuesta(true,
+                        "Horario no válido. El rango permitido es 07:00 – 20:30.");
+            }
+
+            // RN-08: bloques de 30 minutos
+            if (!Validaciones.esBloque30Minutos(cita.getHoraCita())) {
+                return new Respuesta(true,
+                        "Solo se permiten bloques de 30 minutos (ej. 09:00, 09:30).");
+            }
+        }
+
+        // ── Todas las validaciones pasaron → modificar ────────────────────────
+        return CitaImp.modificarCita(cita);
     }
 }
