@@ -39,4 +39,13 @@
         </set>
         WHERE id_cita = #{idCita} 
     </update>
+    
+    <update id="reagendarCita" parameterType="pojo.Cita">
+        UPDATE cita 
+        SET fecha_cita         = #{fechaCita},  
+            hora_cita          = #{horaCita}, 
+            estatus            = 'Reagendada', 
+            motivo_cancelacion = NULL 
+        WHERE id_cita = #{idCita} 
+    </update>
 </mapper>

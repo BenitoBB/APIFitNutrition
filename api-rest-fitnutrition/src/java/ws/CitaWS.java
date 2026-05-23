@@ -155,4 +155,72 @@ public class CitaWS {
         // ── Todas las validaciones pasaron → modificar ────────────────────────
         return CitaImp.modificarCita(cita);
     }
+    
+     @PUT
+    @Path("reagendar")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Respuesta reagendar(Cita cita) {
+
+        // ── Validación básica de entrada ──────────────────────────────────────
+        if (cita == null || cita.getIdCita() <= 0) {
+            return new Respuesta(true, "El ID de la cita es obligatorio.");
+        }
+
+        if (Validaciones.esVacio(cita.getFechaCita())) {
+            return new Respuesta(true, "La nueva fecha de la cita es obligatoria.");
+        }
+
+        if (Validaciones.esVacio(cita.getHoraCita())) {
+            return new Respuesta(true, "La nueva hora de la cita es obligatoria.");
+        }
+
+        // ── Verificar que la cita existe ──────────────────────────────────────
+        Cita citaExistente = CitaImp.buscarCitaPorId(cita.getIdCita());
+        if (citaExistente == null) {
+            return new Respuesta(true, "La cita no existe.");
+        }
+
+        // ── RF-10: Solo reagendable si estatus es Cancelada ──────────────────
+        if (!"Cancelada".equals(citaExistente.getEstatus())) {
+            return new Respuesta(true,
+                    "Solo se pueden reagendar citas con estatus 'Cancelada'.");
+        }
+
+        // ── RN-07: fecha >= hoy + 1 ───────────────────────────────────────────
+        if (!Validaciones.esFechaCitaValida(cita.getFechaCita())) {
+            return new Respuesta(true,
+                    "La cita debe agendarse con al menos 1 día de antelación.");
+        }
+
+        // Normalizar a yyyy-MM-dd
+        String fechaFormateada = Validaciones.formatearFechaISO(cita.getFechaCita());
+        if (fechaFormateada == null) {
+            return new Respuesta(true, "Formato de fecha no válido.");
+        }
+        cita.setFechaCita(fechaFormateada);
+
+        // ── RN-06: UNIQUE (id_paciente, fecha_cita) ───────────────────────────
+        Cita citaDuplicada = CitaImp.buscarCitaPorPacienteYFecha(
+                citaExistente.getIdPaciente(), fechaFormateada);
+        if (citaDuplicada != null) {
+            return new Respuesta(true,
+                    "El paciente ya tiene una cita agendada en esa fecha.");
+        }
+
+        // ── RN-08: rango 07:00 – 20:30 ───────────────────────────────────────
+        if (!Validaciones.esHoraValida(cita.getHoraCita())) {
+            return new Respuesta(true,
+                    "Horario no válido. El rango permitido es 07:00 – 20:30.");
+        }
+
+        // ── RN-08: bloques de 30 minutos ─────────────────────────────────────
+        if (!Validaciones.esBloque30Minutos(cita.getHoraCita())) {
+            return new Respuesta(true,
+                    "Solo se permiten bloques de 30 minutos (ej. 09:00, 09:30).");
+        }
+
+        // ── Todas las validaciones pasaron → reagendar ────────────────────────
+        return CitaImp.reagendarCita(cita);
+    }
 }

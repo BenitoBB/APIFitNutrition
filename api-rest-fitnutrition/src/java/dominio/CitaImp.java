@@ -108,4 +108,32 @@ public class CitaImp {
         }
         return respuesta;
     }
+    
+    public static Respuesta reagendarCita(Cita cita) {
+        Respuesta respuesta = new Respuesta();
+        respuesta.setError(true);
+
+        SqlSession conexionBD = MyBatisUtil.getSession();
+        if (conexionBD == null) {
+            respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+            return respuesta;
+        }
+        try {
+            int filasAfectadas = conexionBD.update("cita.reagendarCita", cita);
+            if (filasAfectadas > 0) {
+                conexionBD.commit();
+                respuesta.setError(false);
+                respuesta.setMensaje("Cita reagendada exitosamente.");
+            } else {
+                respuesta.setMensaje("No fue posible reagendar la cita.");
+            }
+        } catch (Exception e) {
+            conexionBD.rollback();
+            e.printStackTrace();
+            respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+        } finally {
+            conexionBD.close();
+        }
+        return respuesta;
+    }
 }
