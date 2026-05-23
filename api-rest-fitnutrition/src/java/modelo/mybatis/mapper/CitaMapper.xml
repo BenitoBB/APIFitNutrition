@@ -48,4 +48,29 @@
             motivo_cancelacion = NULL 
         WHERE id_cita = #{idCita} 
     </update>
+    
+     <update id="cancelarCita" parameterType="pojo.Cita">
+        UPDATE cita 
+        SET estatus = 'Cancelada', 
+        motivo_cancelacion = #{motivoCancelacion} 
+        WHERE id_cita = #{idCita} 
+    </update>
+    
+    <select id="obtenerCitasPaciente" resultType="pojo.CitaMobil" parameterType="int">
+        SELECT c.id_cita              as idCita,
+               DATE_FORMAT(c.fecha_cita, '%d/%m/%Y') as fechaCita,
+               c.hora_cita            as horaCita,
+               c.id_paciente          as idPaciente,
+               c.id_medico            as idMedico,
+               c.estatus              as estatus,
+               c.motivo_cancelacion   as motivoCancelacion,
+               DATE_FORMAT(c.fecha_creacion, '%d/%m/%Y %H:%i') as fechaCreacion,
+               m.nombre               as medicoNombre,
+               m.primer_apellido      as medicoPrimerApellido,
+               m.segundo_apellido     as medicoSegundoApellido
+        FROM cita c
+        INNER JOIN medico m ON c.id_medico = m.id_medico
+        WHERE c.id_paciente = #{idPaciente}
+        ORDER BY c.fecha_cita DESC, c.hora_cita DESC
+    </select>
 </mapper>

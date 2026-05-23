@@ -12,11 +12,13 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import pojo.Cita;
 import pojo.CitaDetalle;
+import pojo.CitaMobil;
 import utilidades.Validaciones;
 
 /**
@@ -156,7 +158,7 @@ public class CitaWS {
         return CitaImp.modificarCita(cita);
     }
     
-     @PUT
+    @PUT
     @Path("reagendar")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -222,5 +224,35 @@ public class CitaWS {
 
         // ── Todas las validaciones pasaron → reagendar ────────────────────────
         return CitaImp.reagendarCita(cita);
+    }
+    
+    
+    // ── Citas Móvil ───────────────────────────────────────────────────────────
+
+    @GET
+    @Path("citas/{idPaciente}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<CitaMobil> obtenerCitasPaciente(@PathParam("idPaciente") int idPaciente) {
+        return CitaImp.obtenerCitasPaciente(idPaciente);
+    }
+
+    @PUT
+    @Path("cancelar-cita")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Respuesta cancelarCitaMovil(
+            @QueryParam("idCita")              int    idCita,
+            @QueryParam("idPaciente")          int    idPaciente,
+            @QueryParam("motivoCancelacion")   String motivoCancelacion) {
+
+        // ── Validación básica de entrada ──────────────────────────────────────
+        if (idCita <= 0 || idPaciente <= 0) {
+            return new Respuesta(true, "El ID de la cita y del paciente son obligatorios.");
+        }
+        // ── RN-09: Desde móvil el motivo es obligatorio ───────────────────────
+        if (Validaciones.esVacio(motivoCancelacion)) {
+            return new Respuesta(true, "El motivo de cancelación es obligatorio.");
+        }
+
+        return CitaImp.cancelarCitaPaciente(idCita, idPaciente, motivoCancelacion.trim());
     }
 }
