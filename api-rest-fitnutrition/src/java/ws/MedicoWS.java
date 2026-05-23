@@ -3,8 +3,11 @@ package ws;
 import com.google.gson.Gson;
 import dominio.MedicoImp;
 import dto.Respuesta;
+import java.util.ArrayList;
+import java.util.List;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -30,6 +33,22 @@ public class MedicoWS {
     @Consumes(MediaType.APPLICATION_JSON)
     public Respuesta editarMedico(String json) {
         return MedicoImp.editarMedico(new Gson().fromJson(json, Medico.class));
+    }
+    
+    @GET
+    @Path("buscar")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Medico> buscar(
+            @QueryParam("criterio") String criterio,
+            @QueryParam("esAdministrador") Integer esAdministrador) {
+
+        // Solo el administrador puede ejecutar este endpoint
+        // esAdministrador=1 viene del token/sesión en el frontend
+        if (esAdministrador == null || esAdministrador != 1) {
+            return new ArrayList<>();
+        }
+
+        return MedicoImp.buscarMedicos(criterio);
     }
     
     @Path("cambiar-contrasena")

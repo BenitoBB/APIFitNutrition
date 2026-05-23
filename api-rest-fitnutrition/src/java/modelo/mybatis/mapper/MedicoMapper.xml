@@ -70,4 +70,31 @@
         WHERE id_medico  = #{idMedico}
           AND contrasena = #{contrasenaActual}
     </update>
+    
+    <select id="buscarMedicos" resultType="pojo.Medico" parameterType="map">
+        SELECT id_medico AS idMedico, 
+            nombre, 
+            primer_apellido AS primerApellido, 
+            segundo_apellido AS segundoApellido, 
+            DATE_FORMAT(fecha_nacimiento, '%Y-%m-%d') AS fechaNacimiento, 
+            sexo, 
+            id_domicilio AS idDomicilio, 
+            no_personal AS noPersonal, 
+            cedula_profesional AS cedulaProfesional, 
+            es_administrador AS esAdministrador, 
+            estatus 
+        FROM medico 
+        <where>
+            AND estatus = 1 
+            AND es_administrador = 0 
+            <if test="criterio != null and criterio != ''">
+                AND ( 
+                nombre LIKE CONCAT('%', #{criterio}, '%') 
+                OR primer_apellido LIKE CONCAT('%', #{criterio}, '%') 
+                OR no_personal LIKE CONCAT('%', #{criterio}, '%') 
+                ) 
+            </if>
+        </where>
+        ORDER BY primer_apellido, nombre 
+    </select>
 </mapper>

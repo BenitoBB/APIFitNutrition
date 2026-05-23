@@ -1,7 +1,9 @@
 package dominio;
 
 import dto.Respuesta;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import modelo.mybatis.MyBatisUtil;
 import org.apache.ibatis.session.SqlSession;
@@ -133,6 +135,27 @@ public class MedicoImp {
             respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
         }
         return respuesta;
+    }
+    
+    public static List<Medico> buscarMedicos(String criterio) {
+        List<Medico> medicos = new ArrayList<>();
+        SqlSession conexionBD = MyBatisUtil.getSession();
+        if (conexionBD != null) {
+            try {
+                Map<String, Object> parametros = new HashMap<>();
+                parametros.put("criterio",
+                        (criterio != null && !criterio.trim().isEmpty())
+                        ? criterio.trim()
+                        : null
+                );
+                medicos = conexionBD.selectList("medico.buscarMedicos", parametros);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                conexionBD.close();
+            }
+        }
+        return medicos;
     }
     
     // ── Helpers ──────────────────────────────────────────────────────────────
