@@ -77,4 +77,63 @@ public class AlimentoImp {
         }
         return alimentos;
     }
+
+    /**
+     * T323: Editar alimento.
+     * Si las calorías cambian, se llama al SP-2 para recalcular las dietas.
+     * 
+     * @param alimentoModificado objeto con los datos actualizados
+     * @return Respuesta con error=false si fue exitoso
+     */
+    public static Respuesta editarAlimento(Alimento alimentoModificado) {
+        Respuesta respuesta = new Respuesta();
+        respuesta.setError(true);
+
+        SqlSession conexionBD = MyBatisUtil.getSession();
+        if (conexionBD == null) {
+            respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+            return respuesta;
+        }
+
+        try {
+            // 1. Obtener alimento actual para comparar si cambiaron las calorías
+            Alimento alimentoActual = conexionBD.selectOne("alimento.obtenerPorId", alimentoModificado.getIdAlimento());
+            if (alimentoActual == null) {
+                conexionBD.rollback();
+                respuesta.setMensaje("El alimento no existe.");
+                return respuesta;
+            }
+            
+            boolean caloriasCambiaron = (alimentoActual.getCaloriasPorcion() != alimentoModificado.getCaloriasPorcion());
+
+            // 2. Ejecutar UPDATE
+            int filasAfectadas = conexionBD.update("alimento.editarAlimento", alimentoModificado);
+            if (filasAfectadas <= 0) {
+                conexionBD.rollback();
+                respuesta.setMensaje("No fue posible editar el alimento.");
+                return respuesta;
+            }
+
+            // 3. Llamar a SP-2 si las calorías cambiaron
+            if (caloriasCambiaron) {
+                java.sql.Connection conn = conexionBD.getConnection();
+                java.sql.CallableStatement cs = conn.prepareCall("{CALL sp_recalcular_calorias_por_alimento(?)}");
+                cs.setInt(1, alimentoModificado.getIdAlimento());
+                cs.execute();
+                cs.close();
+            }
+
+            conexionBD.commit();
+            respuesta.setError(false);
+            respuesta.setMensaje("Alimento editado exitosamente.");
+        } catch (Exception e) {
+            conexionBD.rollback();
+            e.printStackTrace();
+            respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+        } finally {
+            conexionBD.close();
+        }
+
+        return respuesta;
+    }
 }

@@ -21,4 +21,23 @@
         ORDER BY nombre_alimento
     </select>
 
+    <!-- T323: Obtener alimento por ID -->
+    <select id="obtenerPorId" parameterType="int" resultType="pojo.Alimento">
+        SELECT id_alimento AS idAlimento,
+               nombre_alimento AS nombreAlimento,
+               porcion,
+               calorias_porcion AS caloriasPorcion
+        FROM alimento
+        WHERE id_alimento = #{idAlimento}
+    </select>
+
+    <!-- T323: Editar alimento -->
+    <update id="editarAlimento" parameterType="pojo.Alimento">
+        UPDATE alimento
+        SET nombre_alimento = #{nombreAlimento},
+            porcion = #{porcion},
+            calorias_porcion = #{caloriasPorcion}
+        WHERE id_alimento = #{idAlimento}
+    </update>
+
 </mapper>
