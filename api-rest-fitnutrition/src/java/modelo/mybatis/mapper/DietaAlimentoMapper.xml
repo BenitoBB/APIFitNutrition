@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="dietaAlimento">
+
+    <!-- T319: Agrega un alimento a una categoría de la dieta; TRG-5/6/7 recalculan total_calorias -->
+    <insert id="agregarAlimento" parameterType="map">
+        INSERT INTO dieta_alimento (id_dieta, id_categoria, id_alimento, cantidad)
+        VALUES (#{idDieta}, #{idCategoria}, #{idAlimento}, #{cantidad})
+    </insert>
+
+    <!-- T319: Elimina un alimento de una categoría; TRG-5/6/7 recalculan total_calorias -->
+    <delete id="eliminarAlimento" parameterType="map">
+        DELETE FROM dieta_alimento
+        WHERE id_dieta    = #{idDieta}
+          AND id_categoria = #{idCategoria}
+          AND id_alimento  = #{idAlimento}
+    </delete>
+
+</mapper>

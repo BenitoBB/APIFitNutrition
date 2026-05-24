@@ -35,4 +35,18 @@
         WHERE id_dieta = #{idDieta}
     </select>
 
+    <!-- T319: Modifica nombre y/u observaciones de una dieta -->    
+    <update id="modificarDieta" parameterType="pojo.Dieta">
+        UPDATE dieta
+        <set>
+            <if test="nombreDieta != null and nombreDieta != ''">
+                nombre_dieta = #{nombreDieta},
+            </if>
+            <if test="observaciones != null">
+                observaciones = #{observaciones},
+            </if>
+        </set>
+        WHERE id_dieta = #{idDieta}
+    </update>
+
 </mapper>

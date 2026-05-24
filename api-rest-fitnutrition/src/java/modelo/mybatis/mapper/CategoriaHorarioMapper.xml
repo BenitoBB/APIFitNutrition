@@ -33,4 +33,10 @@
         ORDER BY a.nombre_alimento
     </select>
 
+    <!-- T319: Elimina una categoría de horario (y sus alimentos en cascada) -->
+    <delete id="eliminarCategoria" parameterType="int">
+        DELETE FROM categoria_horario
+        WHERE id_categoria = #{idCategoria}
+    </delete>
+
 </mapper>
