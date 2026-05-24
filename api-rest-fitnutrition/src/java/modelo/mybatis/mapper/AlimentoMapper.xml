@@ -10,4 +10,15 @@
         VALUES (#{nombreAlimento}, #{porcion}, #{caloriasPorcion})
     </insert>
 
+    <!-- T322: Buscar alimentos por nombre -->
+    <select id="buscarPorNombre" parameterType="string" resultType="pojo.Alimento">
+        SELECT id_alimento AS idAlimento,
+               nombre_alimento AS nombreAlimento,
+               porcion,
+               calorias_porcion AS caloriasPorcion
+        FROM alimento
+        WHERE nombre_alimento LIKE CONCAT('%', #{nombre}, '%')
+        ORDER BY nombre_alimento
+    </select>
+
 </mapper>

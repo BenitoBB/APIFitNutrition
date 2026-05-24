@@ -9,9 +9,11 @@ import dto.Respuesta;
 import java.util.Arrays;
 import java.util.List;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import pojo.Alimento;
 import utilidades.Validaciones;
@@ -66,5 +68,23 @@ public class AlimentoWS {
         }
 
         return AlimentoImp.registrarAlimento(alimento);
+    }
+
+    // ── T322: Buscar alimentos ────────────────────────────────────────────────
+
+    /**
+     * GET /api/alimento/buscar?nombre={texto}
+     * Busca alimentos por nombre (coincidencias parciales).
+     * Requiere mínimo 2 caracteres.
+     */
+    @GET
+    @Path("buscar")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object buscar(@QueryParam("nombre") String nombre) {
+        if (Validaciones.esVacio(nombre) || nombre.trim().length() < 2) {
+            return new Respuesta(true, "La búsqueda debe tener al menos 2 caracteres.");
+        }
+
+        return AlimentoImp.buscarPorNombre(nombre.trim());
     }
 }

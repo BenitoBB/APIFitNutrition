@@ -5,6 +5,8 @@
 package dominio;
 
 import dto.Respuesta;
+import java.util.ArrayList;
+import java.util.List;
 import modelo.mybatis.MyBatisUtil;
 import org.apache.ibatis.session.SqlSession;
 import pojo.Alimento;
@@ -51,5 +53,28 @@ public class AlimentoImp {
         }
 
         return respuesta;
+    }
+
+    /**
+     * T322: Buscar alimentos por nombre.
+     * Retorna coincidencias parciales.
+     * Sin resultados retorna lista vacía.
+     * 
+     * @param nombre texto a buscar
+     * @return lista de objetos Alimento
+     */
+    public static List<Alimento> buscarPorNombre(String nombre) {
+        List<Alimento> alimentos = new ArrayList<>();
+        SqlSession conexionBD = MyBatisUtil.getSession();
+        if (conexionBD != null) {
+            try {
+                alimentos = conexionBD.selectList("alimento.buscarPorNombre", nombre);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                conexionBD.close();
+            }
+        }
+        return alimentos;
     }
 }
