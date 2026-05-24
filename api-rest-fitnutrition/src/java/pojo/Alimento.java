@@ -10,6 +10,9 @@ public class Alimento {
     private String porcion;
     private double caloriasPorcion;
 
+    public Alimento() {
+    }
+
     public Alimento(int idAlimento, String nombreAlimento, String porcion, double caloriasPorcion) {
         this.idAlimento = idAlimento;
         this.nombreAlimento = nombreAlimento;

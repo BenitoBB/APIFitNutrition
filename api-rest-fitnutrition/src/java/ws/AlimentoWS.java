@@ -1,0 +1,70 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package ws;
+
+import dominio.AlimentoImp;
+import dto.Respuesta;
+import java.util.Arrays;
+import java.util.List;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import pojo.Alimento;
+import utilidades.Validaciones;
+
+/**
+ * Endpoint REST para la gestión de alimentos.
+ * Base path: /api/alimento
+ */
+@Path("alimento")
+public class AlimentoWS {
+
+    /**
+     * POST /api/alimento/registrar
+     * Registra un nuevo alimento en el catálogo.
+     * Valida que la porción sea válida y las calorías sean mayores a 0.
+     */
+    @POST
+    @Path("registrar")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Respuesta registrar(Alimento alimento) {
+        if (alimento == null) {
+            return new Respuesta(true, "Datos del alimento no proporcionados.");
+        }
+
+        if (Validaciones.esVacio(alimento.getNombreAlimento())) {
+            return new Respuesta(true, "El nombre del alimento es obligatorio.");
+        }
+
+        if (Validaciones.esVacio(alimento.getPorcion())) {
+            return new Respuesta(true, "La porción del alimento es obligatoria.");
+        }
+
+        // Validación de porciones permitidas (case-insensitive)
+        List<String> porcionesValidas = Arrays.asList("Pieza", "Gramos", "Porciones", "Mililitros");
+        boolean porcionValida = false;
+        
+        for (String p : porcionesValidas) {
+            if (p.equalsIgnoreCase(alimento.getPorcion().trim())) {
+                alimento.setPorcion(p); // Se estandariza como se guardará
+                porcionValida = true;
+                break;
+            }
+        }
+        
+        if (!porcionValida) {
+            return new Respuesta(true, "La porción ingresada no es válida. Opciones permitidas: Pieza, Gramos, Porciones, Mililitros.");
+        }
+
+        if (alimento.getCaloriasPorcion() <= 0) {
+            return new Respuesta(true, "Las calorías por porción deben ser mayores a 0.");
+        }
+
+        return AlimentoImp.registrarAlimento(alimento);
+    }
+}
