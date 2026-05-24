@@ -10,6 +10,7 @@ import dto.RQModificarDieta;
 import dto.Respuesta;
 import java.util.List;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -138,5 +139,22 @@ public class DietaWS {
         }
 
         return DietaImp.modificarDieta(rqModificarDieta);
+    }
+
+    // ── T320: Eliminar dieta ──────────────────────────────────────────────────
+
+    /**
+     * DELETE /api/dieta/eliminar/{id}
+     * Elimina una dieta del catálogo.
+     * Si la dieta está en uso por alguna consulta, retornará un error por restricción de llave foránea.
+     */
+    @DELETE
+    @Path("eliminar/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Respuesta eliminar(@PathParam("id") int idDieta) {
+        if (idDieta <= 0) {
+            return new Respuesta(true, "El ID de la dieta es obligatorio.");
+        }
+        return DietaImp.eliminarDieta(idDieta);
     }
 }

@@ -51,4 +51,9 @@
         WHERE id_dieta = #{idDieta}
     </update>
 
+    <!-- T320: Eliminar dieta del catálogo -->
+    <delete id="eliminarDieta" parameterType="int">
+        DELETE FROM dieta WHERE id_dieta = #{idDieta}
+    </delete>
+
 </mapper>

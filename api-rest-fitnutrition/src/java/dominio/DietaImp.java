@@ -260,4 +260,50 @@ public class DietaImp {
 
         return respuesta;
     }
+
+    /**
+     * T320: Eliminar dieta
+     * Elimina una dieta por su ID.
+     * Si está referenciada en consulta, la BD lanza un FK violation (RESTRICT),
+     * el cual capturamos para retornar un mensaje amigable.
+     *
+     * @param idDieta identificador de la dieta
+     * @return Respuesta con error=false si fue exitoso
+     */
+    public static Respuesta eliminarDieta(int idDieta) {
+        Respuesta respuesta = new Respuesta();
+        respuesta.setError(true);
+
+        SqlSession conexionBD = MyBatisUtil.getSession();
+        if (conexionBD == null) {
+            respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+            return respuesta;
+        }
+
+        try {
+            int filasAfectadas = conexionBD.delete("dieta.eliminarDieta", idDieta);
+            if (filasAfectadas > 0) {
+                conexionBD.commit();
+                respuesta.setError(false);
+                respuesta.setMensaje("Dieta eliminada exitosamente.");
+            } else {
+                conexionBD.rollback();
+                respuesta.setMensaje("La dieta no existe o ya fue eliminada.");
+            }
+        } catch (Exception e) {
+            conexionBD.rollback();
+            e.printStackTrace();
+            // Verificar si es una violación de llave foránea
+            String msjError = e.getMessage() != null ? e.getMessage().toLowerCase() : "";
+            if (msjError.contains("foreign key") || msjError.contains("fk_consulta_dieta")) {
+                respuesta.setMensaje("La dieta está asignada a consultas y no puede eliminarse.");
+            } else {
+                respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+            }
+        } finally {
+            conexionBD.close();
+        }
+
+        return respuesta;
+    }
 }
