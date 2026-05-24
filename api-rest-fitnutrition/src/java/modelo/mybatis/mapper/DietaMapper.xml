@@ -5,4 +5,10 @@
 
 <mapper namespace="dieta">
 
+    <!-- T317: INSERT en dieta; total_calorias inicia en 0.00 -->
+    <insert id="crearDieta" parameterType="pojo.Dieta" useGeneratedKeys="true" keyProperty="idDieta">
+        INSERT INTO dieta (nombre_dieta, total_calorias, observaciones, id_medico)
+        VALUES (#{nombreDieta}, 0.00, #{observaciones}, #{idMedico})
+    </insert>
+
 </mapper>

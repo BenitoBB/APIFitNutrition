@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="categoriaHorario">
+
+    <!-- T317: INSERT en categoria_horario usando el id_dieta recién generado -->
+    <insert id="crearCategoriaHorario" parameterType="map">
+        INSERT INTO categoria_horario (id_dieta, nombre_categoria)
+        VALUES (#{idDieta}, #{nombreCategoria})
+    </insert>
+
+</mapper>
