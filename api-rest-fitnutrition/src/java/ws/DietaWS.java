@@ -7,12 +7,17 @@ package ws;
 import dominio.DietaImp;
 import dto.RQCrearDieta;
 import dto.Respuesta;
+import java.util.List;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import pojo.Dieta;
+import pojo.DietaDetalle;
+import pojo.DietaResumen;
 import utilidades.Validaciones;
 
 /**
@@ -63,5 +68,40 @@ public class DietaWS {
                 0.00, rqCrearDieta.getObservaciones(), rqCrearDieta.getIdMedico());
 
         return DietaImp.crearDieta(dieta, rqCrearDieta.getCategorias());
+    }
+
+    // ── T318: Consultar dietas ────────────────────────────────────────────────
+
+    /**
+     * GET /api/dieta/obtener-todas
+     * Retorna el listado de todas las dietas con el campo editable.
+     * Sin resultados → lista vacía con error=false.
+     */
+    @GET
+    @Path("obtener-todas")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<DietaResumen> obtenerTodas() {
+        return DietaImp.obtenerTodas();
+    }
+
+    /**
+     * GET /api/dieta/{id}
+     * Retorna el detalle de una dieta con sus categorías y alimentos.
+     * Si no existe → Respuesta con error=true.
+     */
+    @GET
+    @Path("{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Object obtenerDetalle(@PathParam("id") int idDieta) {
+        if (idDieta <= 0) {
+            return new Respuesta(true, "El ID de la dieta es obligatorio.");
+        }
+
+        DietaDetalle detalle = DietaImp.obtenerDetallePorId(idDieta);
+        if (detalle == null) {
+            return new Respuesta(true, "La dieta no existe.");
+        }
+
+        return detalle;
     }
 }

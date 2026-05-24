@@ -11,4 +11,28 @@
         VALUES (#{nombreDieta}, 0.00, #{observaciones}, #{idMedico})
     </insert>
 
+    <!-- T318: Listado de todas las dietas con la columna editable de la vista -->
+    <select id="obtenerTodas" resultType="pojo.DietaResumen">
+        SELECT id_dieta       AS idDieta,
+               nombre_dieta   AS nombreDieta,
+               total_calorias AS totalCalorias,
+               observaciones,
+               id_medico      AS idMedico,
+               editable
+        FROM vw_dieta_pacientes_count
+        ORDER BY nombre_dieta
+    </select>
+
+    <!-- T318: Datos base de una dieta por su id (sin categorías ni alimentos) -->
+    <select id="obtenerPorId" parameterType="int" resultType="pojo.DietaResumen">
+        SELECT id_dieta       AS idDieta,
+               nombre_dieta   AS nombreDieta,
+               total_calorias AS totalCalorias,
+               observaciones,
+               id_medico      AS idMedico,
+               editable
+        FROM vw_dieta_pacientes_count
+        WHERE id_dieta = #{idDieta}
+    </select>
+
 </mapper>

@@ -11,4 +11,26 @@
         VALUES (#{idDieta}, #{nombreCategoria})
     </insert>
 
+    <!-- T318: Categorías de horario de una dieta -->
+    <select id="obtenerCategoriasPorDieta" parameterType="int" resultType="pojo.CategoriaConAlimentos">
+        SELECT id_categoria    AS idCategoria,
+               nombre_categoria AS nombreCategoria
+        FROM categoria_horario
+        WHERE id_dieta = #{idDieta}
+        ORDER BY id_categoria
+    </select>
+
+    <!-- T318: Alimentos con su cantidad asignada dentro de una categoría -->
+    <select id="obtenerAlimentosPorCategoria" parameterType="int" resultType="pojo.AlimentoEnDieta">
+        SELECT a.id_alimento       AS idAlimento,
+               a.nombre_alimento   AS nombreAlimento,
+               a.porcion,
+               a.calorias_porcion  AS caloriasPorcion,
+               da.cantidad
+        FROM dieta_alimento da
+        INNER JOIN alimento a ON a.id_alimento = da.id_alimento
+        WHERE da.id_categoria = #{idCategoria}
+        ORDER BY a.nombre_alimento
+    </select>
+
 </mapper>
