@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="medico">
+
+    <insert id="registrar" parameterType="pojo.Medico"
+            useGeneratedKeys="true" keyProperty="idMedico">
+        INSERT INTO medico (
+            nombre, primer_apellido, segundo_apellido,
+            fecha_nacimiento, sexo, id_domicilio,
+            no_personal, cedula_profesional, contrasena,
+            es_administrador, estatus
+        ) VALUES (
+            #{nombre}, #{primerApellido}, #{segundoApellido},
+            #{fechaNacimiento}, #{sexo}, #{idDomicilio},
+            #{noPersonal}, #{cedulaProfesional}, #{contrasena},
+            #{esAdministrador}, #{estatus}
+        )
+    </insert>
+    
+    <update id="editar" parameterType="pojo.Medico">
+        UPDATE medico SET
+            nombre             = #{nombre},
+            primer_apellido    = #{primerApellido},
+            segundo_apellido   = #{segundoApellido},
+            fecha_nacimiento   = #{fechaNacimiento},
+            sexo               = #{sexo},
+            id_domicilio       = #{idDomicilio},
+            no_personal        = #{noPersonal},
+            cedula_profesional = #{cedulaProfesional},
+            es_administrador   = #{esAdministrador},
+            estatus            = #{estatus}
+        WHERE id_medico = #{idMedico}
+    </update>
+
+    <select id="obtenerPorId" parameterType="int" resultType="pojo.Medico">
+        SELECT
+            id_medico          AS idMedico,
+            nombre,
+            primer_apellido    AS primerApellido,
+            segundo_apellido   AS segundoApellido,
+            fecha_nacimiento   AS fechaNacimiento,
+            sexo,
+            id_domicilio       AS idDomicilio,
+            no_personal        AS noPersonal,
+            cedula_profesional AS cedulaProfesional,
+            es_administrador   AS esAdministrador,
+            estatus
+        FROM medico
+        WHERE id_medico = #{idMedico}
+    </select>
+
+    <select id="existeNoPersonal" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM medico
+        WHERE no_personal = #{noPersonal}
+          AND id_medico  != #{idMedico}
+    </select>
+
+    <select id="existeCedula" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM medico
+        WHERE cedula_profesional = #{cedulaProfesional}
+          AND id_medico         != #{idMedico}
+    </select>
+    
+    <update id="cambiarContrasena" parameterType="map">
+        UPDATE medico
+        SET contrasena = #{contrasenaNueva}
+        WHERE id_medico  = #{idMedico}
+          AND contrasena = #{contrasenaActual}
+    </update>
+    
+    <select id="buscarMedicos" resultType="pojo.Medico" parameterType="map">
+        SELECT id_medico AS idMedico, 
+            nombre, 
+            primer_apellido AS primerApellido, 
+            segundo_apellido AS segundoApellido, 
+            DATE_FORMAT(fecha_nacimiento, '%Y-%m-%d') AS fechaNacimiento, 
+            sexo, 
+            id_domicilio AS idDomicilio, 
+            no_personal AS noPersonal, 
+            cedula_profesional AS cedulaProfesional, 
+            es_administrador AS esAdministrador, 
+            estatus 
+        FROM medico 
+        <where>
+            AND estatus = 1 
+            AND es_administrador = 0 
+            <if test="criterio != null and criterio != ''">
+                AND ( 
+                nombre LIKE CONCAT('%', #{criterio}, '%') 
+                OR primer_apellido LIKE CONCAT('%', #{criterio}, '%') 
+                OR no_personal LIKE CONCAT('%', #{criterio}, '%') 
+                ) 
+            </if>
+        </where>
+        ORDER BY primer_apellido, nombre 
+    </select>
+    
+     <select id="validarMedicoBaja" resultType="int" parameterType="int">
+        SELECT COUNT(*)
+        FROM medico
+        WHERE id_medico = #{idMedico}
+            AND estatus = 1
+            AND es_administrador = 0
+    </select>
+
+    <select id="validarMedicoDestino" resultType="int" parameterType="int">
+        SELECT COUNT(*)
+        FROM medico
+        WHERE id_medico = #{idMedico}
+            AND estatus = 1
+            AND es_administrador = 0
+    </select>
+
+    <insert id="registrarHistorialReasignacionBaja" parameterType="map">
+        INSERT INTO historial_reasignacion (
+            id_paciente,
+            id_medico_anterior,
+            id_medico_nuevo,
+            motivo
+        )
+        SELECT
+            id_paciente,
+            #{idMedicoBaja},
+            #{idMedicoNuevo},
+            'Baja lógica de médico'
+        FROM paciente
+        WHERE id_medico = #{idMedicoBaja}
+            AND estatus = 1
+    </insert>
+
+    <update id="reasignarPacientesActivosMedico" parameterType="map">
+        UPDATE paciente
+        SET id_medico = #{idMedicoNuevo}
+        WHERE id_medico = #{idMedicoBaja}
+            AND estatus = 1
+    </update>
+
+    <update id="bajaLogicaMedico" parameterType="int">
+        UPDATE medico
+        SET estatus = 0
+        WHERE id_medico = #{idMedico}
+            AND estatus = 1
+            AND es_administrador = 0
+    </update>
+</mapper>

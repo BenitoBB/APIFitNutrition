@@ -1,0 +1,4 @@
+
+# Archivo de BD local (solo contexto)
+src/java/modelo/mybatis/BDFitNutrition.sql
+src/java/modelo/mybatis/BD_Triggers_SP.sql

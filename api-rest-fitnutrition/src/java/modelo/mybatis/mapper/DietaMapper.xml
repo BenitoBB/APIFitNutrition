@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="dieta">
+
+    <!-- T317: INSERT en dieta; total_calorias inicia en 0.00 -->
+    <insert id="crearDieta" parameterType="pojo.Dieta" useGeneratedKeys="true" keyProperty="idDieta">
+        INSERT INTO dieta (nombre_dieta, total_calorias, observaciones, id_medico)
+        VALUES (#{nombreDieta}, 0.00, #{observaciones}, #{idMedico})
+    </insert>
+
+    <!-- T318: Listado de todas las dietas con la columna editable de la vista -->
+    <select id="obtenerTodas" resultType="pojo.DietaResumen">
+        SELECT d.id_dieta       AS idDieta,
+               d.nombre_dieta   AS nombreDieta,
+               d.total_calorias AS totalCalorias,
+               d.observaciones,
+               d.id_medico      AS idMedico,
+               v.editable
+        FROM dieta d
+        INNER JOIN vw_dieta_pacientes_count v ON v.id_dieta = d.id_dieta
+        ORDER BY d.nombre_dieta
+    </select>
+
+    <!-- T318: Datos base de una dieta por su id (sin categorías ni alimentos) -->
+    <select id="obtenerPorId" parameterType="int" resultType="pojo.DietaResumen">
+        SELECT d.id_dieta       AS idDieta,
+               d.nombre_dieta   AS nombreDieta,
+               d.total_calorias AS totalCalorias,
+               d.observaciones,
+               d.id_medico      AS idMedico,
+               v.editable
+        FROM dieta d
+        INNER JOIN vw_dieta_pacientes_count v ON v.id_dieta = d.id_dieta
+        WHERE d.id_dieta = #{idDieta}
+    </select>
+
+    <!-- T319: Modifica nombre y/u observaciones de una dieta -->    
+    <update id="modificarDieta" parameterType="pojo.Dieta">
+        UPDATE dieta
+        <set>
+            <if test="nombreDieta != null and nombreDieta != ''">
+                nombre_dieta = #{nombreDieta},
+            </if>
+            <if test="observaciones != null">
+                observaciones = #{observaciones},
+            </if>
+        </set>
+        WHERE id_dieta = #{idDieta}
+    </update>
+
+    <!-- T320: Eliminar dieta del catálogo -->
+    <delete id="eliminarDieta" parameterType="int">
+        DELETE FROM dieta WHERE id_dieta = #{idDieta}
+    </delete>
+
+</mapper>

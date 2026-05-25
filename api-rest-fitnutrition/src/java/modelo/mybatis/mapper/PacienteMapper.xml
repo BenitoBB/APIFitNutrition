@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="paciente">
+    <insert id="registrar" parameterType="pojo.Paciente" useGeneratedKeys="true" keyProperty="idPaciente">
+        INSERT INTO paciente (
+            nombre, primer_apellido, segundo_apellido,
+            fecha_nacimiento, sexo, peso, estatura, talla,
+            email, telefono, id_domicilio,
+            codigo_acceso, id_medico, estatus
+        ) VALUES (
+            #{nombre}, #{primerApellido}, #{segundoApellido},
+            #{fechaNacimiento}, #{sexo}, #{peso}, #{estatura}, #{talla},
+            #{email}, #{telefono}, #{idDomicilio},
+            #{codigoAcceso}, #{idMedico}, #{estatus}
+        )
+    </insert>
+    
+    <update id="actualizar" parameterType="pojo.Paciente">
+        UPDATE paciente SET
+            nombre           = #{nombre},
+            primer_apellido  = #{primerApellido},
+            segundo_apellido = #{segundoApellido},
+            fecha_nacimiento = #{fechaNacimiento},
+            sexo             = #{sexo},
+            telefono         = #{telefono},
+            id_domicilio     = #{idDomicilio},
+            id_medico        = #{idMedico},
+            estatus          = #{estatus}
+        WHERE id_paciente = #{idPaciente}
+    </update>
+    
+    <update id="actualizarEmail" parameterType="map">
+        UPDATE paciente SET email = #{nuevoEmail}
+        WHERE id_paciente = #{idPaciente}
+    </update>
+
+    <update id="actualizarNip" parameterType="map">
+        UPDATE paciente
+        SET codigo_acceso = #{nuevoNip}
+        WHERE id_paciente  = #{idPaciente}
+          AND codigo_acceso = #{nipActual}
+    </update>
+    
+    <update id="darDeBaja" parameterType="int">
+        UPDATE paciente SET estatus = 0
+        WHERE id_paciente = #{idPaciente}
+    </update>
+    
+    <select id="obtenerPorId" parameterType="int" resultType="pojo.Paciente">
+        SELECT
+            id_paciente      AS idPaciente,
+            nombre,
+            primer_apellido  AS primerApellido,
+            segundo_apellido AS segundoApellido,
+            fecha_nacimiento AS fechaNacimiento,
+            sexo, peso, estatura, talla,
+            email, telefono,
+            id_domicilio     AS idDomicilio,
+            codigo_acceso    AS codigoAcceso,
+            id_medico        AS idMedico,
+            estatus
+        FROM paciente
+        WHERE id_paciente = #{idPaciente}
+    </select>
+
+    <select id="existeEmail" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM paciente
+        WHERE email = #{email}
+          AND id_paciente != #{idPaciente}
+    </select>
+    
+    <select id="obtenerPerfil" parameterType="int" resultType="pojo.Paciente">
+        SELECT
+            p.id_paciente      AS idPaciente,
+            p.nombre,
+            p.primer_apellido  AS primerApellido,
+            p.segundo_apellido AS segundoApellido,
+            p.fecha_nacimiento AS fechaNacimiento,
+            p.sexo,
+            p.peso,
+            p.estatura,
+            p.talla,
+            p.email,
+            p.telefono,
+            p.id_domicilio     AS idDomicilio,
+            p.estatus
+        FROM paciente p
+        WHERE p.id_paciente = #{idPaciente}
+    </select>
+    
+    <update id="editarPerfil" parameterType="pojo.Paciente">
+        UPDATE paciente SET
+            nombre           = #{nombre},
+            primer_apellido  = #{primerApellido},
+            segundo_apellido = #{segundoApellido},
+            fecha_nacimiento = #{fechaNacimiento},
+            sexo             = #{sexo},
+            telefono         = #{telefono},
+            id_domicilio     = #{idDomicilio}
+        WHERE id_paciente = #{idPaciente}
+          AND estatus = 1
+    </update>
+    
+    <select id="buscar" parameterType="map" resultType="pojo.Paciente">
+        SELECT
+            p.id_paciente      AS idPaciente,
+            p.nombre,
+            p.primer_apellido  AS primerApellido,
+            p.segundo_apellido AS segundoApellido,
+            p.fecha_nacimiento AS fechaNacimiento,
+            p.sexo,
+            p.peso,
+            p.estatura,
+            p.talla,
+            p.email,
+            p.telefono,
+            p.id_domicilio     AS idDomicilio,
+            p.estatus,
+            d.calle,
+            d.numero,
+            d.id_colonia       AS idColonia
+        FROM paciente p
+        LEFT JOIN domicilio d ON d.id_domicilio = p.id_domicilio
+        WHERE (
+            p.nombre           LIKE CONCAT('%', #{criterio}, '%')
+            OR p.primer_apellido  LIKE CONCAT('%', #{criterio}, '%')
+            OR p.segundo_apellido LIKE CONCAT('%', #{criterio}, '%')
+            OR CONCAT_WS(' ', p.nombre, p.primer_apellido, p.segundo_apellido)
+               LIKE CONCAT('%', #{criterio}, '%')
+        )
+        <if test="idMedico != null and idMedico > 0">
+            AND p.id_medico = #{idMedico}
+        </if>
+        AND p.estatus = 1
+        ORDER BY p.primer_apellido, p.segundo_apellido, p.nombre
+    </select>
+
+    <select id="login" parameterType="map" resultType="pojo.Paciente">
+        SELECT
+            id_paciente      AS idPaciente,
+            nombre,
+            primer_apellido  AS primerApellido,
+            segundo_apellido AS segundoApellido,
+            fecha_nacimiento AS fechaNacimiento,
+            sexo,
+            email,
+            telefono,
+            id_domicilio     AS idDomicilio,
+            id_medico        AS idMedico,
+            estatus
+        FROM paciente
+        WHERE email         = #{email}
+          AND codigo_acceso = #{codigoAcceso}
+    </select>
+</mapper>

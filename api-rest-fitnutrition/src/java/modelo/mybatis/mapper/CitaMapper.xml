@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cita">
+    <select id="buscarCitaPorPacienteYFecha" resultType="pojo.Cita" parameterType="map">
+        SELECT id_cita as idCita, 
+        DATE_FORMAT(fecha_cita, '%Y-%m-%d') as fechaCita, 
+        hora_cita as horaCita, 
+        id_paciente as idPaciente, 
+        id_medico as idMedico, 
+        observaciones, 
+        estatus, 
+        motivo_cancelacion as motivoCancelacion, 
+        DATE_FORMAT(fecha_creacion, '%Y-%m-%d %H:%i:%s') as fechaCreacion 
+        FROM cita 
+        WHERE id_paciente = #{idPaciente}  
+        AND fecha_cita = #{fechaCita} 
+    </select>
+    
+    <insert id="crearCita" parameterType="pojo.Cita">
+        INSERT INTO cita (fecha_cita, hora_cita, id_paciente, id_medico, observaciones, estatus) 
+        VALUES (#{fechaCita}, #{horaCita}, #{idPaciente}, #{idMedico}, #{observaciones}, 'Confirmada')
+    </insert>
+    
+     <update id="modificarCita" parameterType="pojo.Cita">
+        UPDATE cita 
+        <set>
+            <if test="fechaCita != null and fechaCita != ''">
+                fecha_cita = #{fechaCita}, 
+            </if>
+            <if test="horaCita != null and horaCita != ''">
+                hora_cita = #{horaCita}, 
+            </if>
+            <if test="observaciones != null">
+                observaciones = #{observaciones}, 
+            </if>
+        </set>
+        WHERE id_cita = #{idCita} 
+    </update>
+    
+    <update id="reagendarCita" parameterType="pojo.Cita">
+        UPDATE cita 
+        SET fecha_cita         = #{fechaCita},  
+            hora_cita          = #{horaCita}, 
+            estatus            = 'Reagendada', 
+            motivo_cancelacion = NULL 
+        WHERE id_cita = #{idCita} 
+    </update>
+    
+     <update id="cancelarCita" parameterType="pojo.Cita">
+        UPDATE cita 
+        SET estatus = 'Cancelada', 
+        motivo_cancelacion = #{motivoCancelacion} 
+        WHERE id_cita = #{idCita} 
+    </update>
+    
+    <select id="obtenerCitasPaciente" resultType="pojo.CitaMobil" parameterType="int">
+        SELECT c.id_cita              as idCita,
+               DATE_FORMAT(c.fecha_cita, '%d/%m/%Y') as fechaCita,
+               c.hora_cita            as horaCita,
+               c.id_paciente          as idPaciente,
+               c.id_medico            as idMedico,
+               c.estatus              as estatus,
+               c.motivo_cancelacion   as motivoCancelacion,
+               DATE_FORMAT(c.fecha_creacion, '%d/%m/%Y %H:%i') as fechaCreacion,
+               m.nombre               as medicoNombre,
+               m.primer_apellido      as medicoPrimerApellido,
+               m.segundo_apellido     as medicoSegundoApellido
+        FROM cita c
+        INNER JOIN medico m ON c.id_medico = m.id_medico
+        WHERE c.id_paciente = #{idPaciente}
+        ORDER BY c.fecha_cita DESC, c.hora_cita DESC
+    </select>
+</mapper>

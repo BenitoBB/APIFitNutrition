@@ -1,0 +1,7 @@
+/api-rest-fitnutrition/nbproject/private/
+/api-rest-fitnutrition/build/
+build/
+dist/
+nbproject/private/
+*.class
+*.log
