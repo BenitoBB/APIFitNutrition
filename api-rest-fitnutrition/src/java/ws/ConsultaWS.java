@@ -146,41 +146,23 @@ public class ConsultaWS {
     @PUT
     @Produces(MediaType.APPLICATION_JSON)
     public Respuesta cancelarConsulta(
-            @PathParam("idConsulta") String idConsulta) {
+    @PathParam("idConsulta") String idConsulta) {
 
-        Respuesta respuesta = new Respuesta();
+    Respuesta respuesta = new Respuesta();
 
-        if (idConsulta == null || idConsulta.isEmpty()) {
+    if (idConsulta == null || idConsulta.isEmpty()) {
 
-            respuesta.setError(true);
-            respuesta.setMensaje(
-                    "El idConsulta es obligatorio"
-            );
-
-            return respuesta;
-        }
-
-        int id = Integer.parseInt(idConsulta);
-
-        boolean resultado
-                = ConsultaImp.cancelarConsulta(id);
-
-        if (resultado) {
-
-            respuesta.setError(false);
-            respuesta.setMensaje(
-                    "Consulta cancelada correctamente"
-            );
-
-        } else {
-
-            respuesta.setError(true);
-            respuesta.setMensaje(
-                    "La consulta no existe"
-            );
-        }
+        respuesta.setError(true);
+        respuesta.setMensaje(
+                "El idConsulta es obligatorio"
+        );
 
         return respuesta;
     }
 
+    int id = Integer.parseInt(idConsulta);
+
+    return ConsultaImp.cancelarConsulta(id);
+
+    }
 }

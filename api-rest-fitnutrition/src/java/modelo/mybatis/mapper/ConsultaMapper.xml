@@ -71,11 +71,12 @@
     </update>
 
     <update id="cancelar-consulta"
-            parameterType="int">
+        parameterType="int">
 
-        UPDATE consulta
-        SET estatus = 0
-        WHERE id_consulta = #{idConsulta}
+    UPDATE consulta
+    SET cancelada = 1
+    WHERE id_consulta = #{idConsulta}
+    AND cancelada = 0
 
     </update>
 
