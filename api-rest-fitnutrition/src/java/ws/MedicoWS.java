@@ -16,9 +16,27 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import pojo.Medico;
+import utilidades.Validaciones;
 
 @Path("medico")
 public class MedicoWS {
+
+    @POST
+    @Path("login")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public RSAutenticacionMedico login(Medico credentials) {
+        if (credentials == null || Validaciones.esVacio(credentials.getNoPersonal()) || Validaciones.esVacio(credentials.getContrasena())) {
+            return new RSAutenticacionMedico(true, "El número de personal y la contraseña son obligatorios.", null, false);
+        }
+
+        // Validación: Máximo 9 caracteres alfanuméricos
+        if (!Validaciones.esAlfanumericoConLongitudMaxima(credentials.getNoPersonal(), 9)) {
+            return new RSAutenticacionMedico(true, "Número de personal inválido (debe ser alfanumérico de máximo 9 caracteres).", null, false);
+        }
+
+        return AutenticacionImp.loginMedico(credentials.getNoPersonal().trim(), credentials.getContrasena());
+    }
 
     @Path("registrar")
     @POST

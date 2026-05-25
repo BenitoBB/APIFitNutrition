@@ -3,6 +3,22 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="alimentacion">
-
+<mapper namespace="autenticacion">
+    <select id="loginMedico" resultType="pojo.Medico" parameterType="map">
+        SELECT id_medico as idMedico, 
+               nombre, 
+               primer_apellido as primerApellido, 
+               segundo_apellido as segundoApellido, 
+               DATE_FORMAT(fecha_nacimiento, '%d/%m/%Y') as fechaNacimiento, 
+               sexo, 
+               id_domicilio as idDomicilio, 
+               no_personal as noPersonal, 
+               cedula_profesional as cedulaProfesional, 
+               es_administrador as esAdministrador, 
+               estatus,
+               fotografia 
+        FROM medico 
+        WHERE no_personal = #{noPersonal}  
+          AND contrasena = SHA2(#{contrasena}, 256) 
+    </select>
 </mapper>
