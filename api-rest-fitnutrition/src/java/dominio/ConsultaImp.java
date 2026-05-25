@@ -97,4 +97,66 @@ public class ConsultaImp {
         return resultado;
     }
 
+        public static List<Consulta> buscarConsultasPaciente(int idPaciente) {
+
+        List<Consulta> consultas = null;
+
+        SqlSession conexionBD = MyBatisUtil.getSession();
+
+        if (conexionBD != null) {
+
+            try {
+
+                consultas = conexionBD.selectList(
+                        "consulta.buscar-consultas-paciente",
+                        idPaciente
+                );
+
+            } catch (Exception e) {
+
+                throw new RuntimeException(e.getMessage());
+
+            } finally {
+
+                conexionBD.close();
+
+            }
+        }
+
+        return consultas;
+    }
+
+    public static boolean cancelarConsulta(int idConsulta) {
+
+        boolean resultado = false;
+
+        SqlSession conexionBD = MyBatisUtil.getSession();
+
+        if (conexionBD != null) {
+
+            try {
+
+                int filasAfectadas = conexionBD.update(
+                        "consulta.cancelar-consulta",
+                        idConsulta
+                );
+
+                conexionBD.commit();
+
+                resultado = filasAfectadas > 0;
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+                conexionBD.rollback();
+
+            } finally {
+
+                conexionBD.close();
+            }
+        }
+
+        return resultado;
+    }
+
 }
