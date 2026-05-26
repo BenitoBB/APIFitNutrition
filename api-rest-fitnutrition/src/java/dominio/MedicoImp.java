@@ -213,6 +213,58 @@ public class MedicoImp {
         return respuesta;
     }
     
+    public static Respuesta guardarFotografia(int idMedico, byte[] fotografia) {
+        Respuesta respuesta = new Respuesta();
+        respuesta.setError(true);
+ 
+        SqlSession conexionBD = MyBatisUtil.getSession();
+        if (conexionBD != null) {
+            try {
+                Medico medico = new Medico();
+                medico.setIdMedico(idMedico);
+                medico.setFotografia(fotografia);
+ 
+                int filasAfectadas = conexionBD.update("medico.guardar-fotografia", medico);
+                conexionBD.commit();
+ 
+                if (filasAfectadas > 0) {
+                    respuesta.setError(false);
+                    respuesta.setMensaje("La fotografía del médico ha sido guardada correctamente");
+                } else {
+                    respuesta.setMensaje("La fotografía del médico no ha sido guardada, inténtelo más tarde");
+                }
+            } catch (Exception e) {
+                respuesta.setMensaje(e.getMessage());
+            } finally {
+                conexionBD.close();
+            }
+        } else {
+            respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+        }
+ 
+        return respuesta;
+    }
+ 
+    // ----------------------------------------------------------------
+    // Obtener fotografía del médico (devuelve fotoBase64)
+    // ----------------------------------------------------------------
+    public static Medico obtenerFotografia(int idMedico) {
+        Medico medico = new Medico();
+ 
+        SqlSession conexionBD = MyBatisUtil.getSession();
+        if (conexionBD != null) {
+            try {
+                medico = conexionBD.selectOne("medico.obtener-fotografia", idMedico);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                conexionBD.close();
+            }
+        }
+ 
+        return medico;
+    }
+    
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     private static boolean existeMedico(SqlSession conexion, int idMedico) {

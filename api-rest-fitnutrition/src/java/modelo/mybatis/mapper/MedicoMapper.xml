@@ -145,4 +145,19 @@
             AND estatus = 1
             AND es_administrador = 0
     </update>
+    
+     <!-- Guardar (subir) fotografía del médico -->
+    <update id="guardar-fotografia" parameterType="pojo.Medico">
+        UPDATE medico
+        SET fotografia = #{fotografia}
+        WHERE id_medico = #{idMedico}
+    </update>
+ 
+    <!-- Obtener fotografía del médico como Base64 -->
+    <select id="obtener-fotografia" parameterType="int" resultType="pojo.Medico">
+        SELECT id_medico        AS idMedico,
+               TO_BASE64(fotografia) AS fotoBase64
+        FROM medico
+        WHERE id_medico = #{idMedico}
+    </select>
 </mapper>

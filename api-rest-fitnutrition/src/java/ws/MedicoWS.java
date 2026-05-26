@@ -8,12 +8,14 @@ import dto.RSAutenticacionMedico;
 import dto.Respuesta;
 import java.util.ArrayList;
 import java.util.List;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -105,5 +107,32 @@ public class MedicoWS {
             @FormParam("contrasenaNueva")   String contrasenaNueva) {
         return MedicoImp.cambiarContrasena(idMedico, contrasenaActual, contrasenaNueva);
     }
+    
+    @Path("subir-fotografia/{idMedico}")
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    public Respuesta subirFotografia(
+            @PathParam("idMedico") Integer idMedico,
+            byte[] fotografia) {
+ 
+        if (idMedico != null && idMedico > 0
+                && fotografia != null && fotografia.length > 0) {
+            return MedicoImp.guardarFotografia(idMedico, fotografia);
+        }
+        throw new BadRequestException();
+    }
+    
+    @Path("obtener-fotografia/{idMedico}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Medico obtenerFotografia(
+            @PathParam("idMedico") Integer idMedico) {
+ 
+        if (idMedico != null && idMedico > 0) {
+            return MedicoImp.obtenerFotografia(idMedico);
+        }
+        throw new BadRequestException();
+    }
+
 
 }
