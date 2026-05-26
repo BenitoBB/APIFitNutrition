@@ -126,4 +126,5 @@
         WHERE c.id_paciente = #{idPaciente}
         ORDER BY c.fecha_cita DESC, c.hora_cita DESC
     </select>
+    
 </mapper>

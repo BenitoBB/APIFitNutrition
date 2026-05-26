@@ -22,6 +22,7 @@ import utilidades.Validaciones;
  * @author julia
  */
 public class CitaImp {
+    
     public static Cita buscarCitaPorPacienteYFecha(int idPaciente, String fechaCita) {
         SqlSession conexionBD = MyBatisUtil.getSession();
         if (conexionBD != null) {

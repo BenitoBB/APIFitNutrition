@@ -1,8 +1,10 @@
 package ws;
 
 import com.google.gson.Gson;
+import dominio.AutenticacionImp;
 import dominio.MedicoImp;
 import dto.RQBajaMedico;
+import dto.RSAutenticacionMedico;
 import dto.Respuesta;
 import java.util.ArrayList;
 import java.util.List;
