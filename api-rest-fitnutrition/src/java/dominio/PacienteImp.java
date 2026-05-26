@@ -478,4 +478,60 @@ public class PacienteImp {
 
         return dietas;
     }
+    
+    
+    // ----------------------------------------------------------------
+    // Guardar (subir) fotografía del paciente
+    // ----------------------------------------------------------------
+    public static Respuesta guardarFotografia(int idPaciente, byte[] fotografia) {
+        Respuesta respuesta = new Respuesta();
+        respuesta.setError(true);
+ 
+        SqlSession conexionBD = MyBatisUtil.getSession();
+        if (conexionBD != null) {
+            try {
+                Paciente paciente = new Paciente();
+                paciente.setIdPaciente(idPaciente);
+                paciente.setFotografia(fotografia);
+ 
+                int filasAfectadas = conexionBD.update("paciente.guardar-fotografia", paciente);
+                conexionBD.commit();
+ 
+                if (filasAfectadas > 0) {
+                    respuesta.setError(false);
+                    respuesta.setMensaje("La fotografía del paciente ha sido guardada correctamente");
+                } else {
+                    respuesta.setMensaje("La fotografía del paciente no ha sido guardada, inténtelo más tarde");
+                }
+            } catch (Exception e) {
+                respuesta.setMensaje(e.getMessage());
+            } finally {
+                conexionBD.close();
+            }
+        } else {
+            respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+        }
+ 
+        return respuesta;
+    }
+ 
+    // ----------------------------------------------------------------
+    // Obtener fotografía del paciente (devuelve fotoBase64)
+    // ----------------------------------------------------------------
+    public static Paciente obtenerFotografia(int idPaciente) {
+        Paciente paciente = new Paciente();
+ 
+        SqlSession conexionBD = MyBatisUtil.getSession();
+        if (conexionBD != null) {
+            try {
+                paciente = conexionBD.selectOne("paciente.obtener-fotografia", idPaciente);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                conexionBD.close();
+            }
+        }
+ 
+        return paciente;
+    }
 }

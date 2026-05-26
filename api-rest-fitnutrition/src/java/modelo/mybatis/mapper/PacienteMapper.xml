@@ -188,4 +188,19 @@
         WHERE c.id_paciente = #{idPaciente}
 
     </select>
+    
+    <!-- Guardar (subir) fotografía del paciente -->
+    <update id="guardar-fotografia" parameterType="pojo.Paciente">
+        UPDATE paciente
+        SET fotografia = #{fotografia}
+        WHERE id_paciente = #{idPaciente}
+    </update>
+ 
+    <!-- Obtener fotografía del paciente como Base64 -->
+    <select id="obtener-fotografia" parameterType="int" resultType="pojo.Paciente">
+        SELECT id_paciente          AS idPaciente,
+               TO_BASE64(fotografia)    AS fotoBase64
+        FROM paciente
+        WHERE id_paciente = #{idPaciente}
+    </select>
 </mapper>

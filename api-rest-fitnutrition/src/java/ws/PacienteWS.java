@@ -142,4 +142,30 @@ public class PacienteWS {
                 idPaciente
         );
     }
+    
+    @Path("subir-fotografia/{idPaciente}")
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    public Respuesta subirFotografia(
+            @PathParam("idPaciente") Integer idPaciente,
+            byte[] fotografia) {
+ 
+        if (idPaciente != null && idPaciente > 0
+                && fotografia != null && fotografia.length > 0) {
+            return PacienteImp.guardarFotografia(idPaciente, fotografia);
+        }
+        throw new BadRequestException();
+    }
+
+    @Path("obtener-fotografia/{idPaciente}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Paciente obtenerFotografia(
+            @PathParam("idPaciente") Integer idPaciente) {
+ 
+        if (idPaciente != null && idPaciente > 0) {
+            return PacienteImp.obtenerFotografia(idPaciente);
+        }
+        throw new BadRequestException();
+    }
 }
