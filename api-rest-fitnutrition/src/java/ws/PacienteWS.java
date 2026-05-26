@@ -9,6 +9,7 @@ import dominio.PacienteImp;
 import dto.RSAutenticacionPaciente;
 import dto.Respuesta;
 import java.util.List;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
@@ -23,12 +24,12 @@ import javax.ws.rs.core.MediaType;
 
 import pojo.Dieta;
 import pojo.Paciente;
+import pojo.ProgresoPaciente;
 
 @Path("paciente")
 public class PacienteWS {
 
     // ── Admin / Portal ────────────────────────────────────────────────────────
-
     @Path("registrar")
     @POST
     @Produces(MediaType.APPLICATION_JSON)
@@ -51,26 +52,24 @@ public class PacienteWS {
     public Respuesta darDeBajaPaciente(@PathParam("idPaciente") int idPaciente) {
         return PacienteImp.darDeBajaPaciente(idPaciente);
     }
-    
+
     @Path("buscar")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<Paciente> buscarPacientes(
-            @QueryParam("criterio") String  criterio,
+            @QueryParam("criterio") String criterio,
             @QueryParam("idMedico") Integer idMedico) {
         return PacienteImp.buscarPacientes(criterio, idMedico);
     }
-    
-    // ── Móvil ─────────────────────────────────────────────────────────────────
 
+    // ── Móvil ─────────────────────────────────────────────────────────────────
     @Path("perfil/{idPaciente}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Paciente obtenerPerfilPaciente(@PathParam("idPaciente") int idPaciente) {
         return PacienteImp.obtenerPerfilPaciente(idPaciente);
     }
-    
-    
+
     @Path("editar-perfil")
     @PUT
     @Produces(MediaType.APPLICATION_JSON)
@@ -83,9 +82,9 @@ public class PacienteWS {
     @PUT
     @Produces(MediaType.APPLICATION_JSON)
     public Respuesta actualizarEmail(
-            @FormParam("idPaciente")  int    idPaciente,
+            @FormParam("idPaciente") int idPaciente,
             @FormParam("emailActual") String emailActual,
-            @FormParam("nuevoEmail")  String nuevoEmail) {
+            @FormParam("nuevoEmail") String nuevoEmail) {
         return PacienteImp.actualizarEmail(idPaciente, emailActual, nuevoEmail);
     }
 
@@ -93,12 +92,11 @@ public class PacienteWS {
     @PUT
     @Produces(MediaType.APPLICATION_JSON)
     public Respuesta actualizarNip(
-            @FormParam("idPaciente") int    idPaciente,
-            @FormParam("nipActual")  String nipActual,
-            @FormParam("nuevoNip")   String nuevoNip) {
+            @FormParam("idPaciente") int idPaciente,
+            @FormParam("nipActual") String nipActual,
+            @FormParam("nuevoNip") String nuevoNip) {
         return PacienteImp.actualizarNip(idPaciente, nipActual, nuevoNip);
     }
-   
 
     @Path("login")
     @POST
@@ -111,10 +109,6 @@ public class PacienteWS {
     }
 
     //T330 - Consultar dietas y progreso (app móvil)
-    
-    @Path("paciente")
-    public class PacienteWS {
-
     @Path("progreso/{id}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)

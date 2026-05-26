@@ -11,6 +11,7 @@ import org.apache.ibatis.session.SqlSession;
 import pojo.Dieta;
 import pojo.Medico;
 import pojo.Paciente;
+import pojo.ProgresoPaciente;
 import utilidades.Constantes;
 import utilidades.Seguridad;
 import utilidades.Validaciones;
@@ -68,7 +69,6 @@ public class PacienteImp {
     }
 
     // ── Admin ────────────────────────────────────────────────────────────────
-
     public static Respuesta actualizarPaciente(Paciente paciente) {
         Respuesta respuesta = new Respuesta();
         respuesta.setError(true);
@@ -147,7 +147,7 @@ public class PacienteImp {
         }
         return respuesta;
     }
-    
+
     public static List<Paciente> buscarPacientes(String criterio, Integer idMedico) {
         List<Paciente> pacientes = null;
         SqlSession conexion = MyBatisUtil.getSession();
@@ -166,9 +166,8 @@ public class PacienteImp {
         }
         return pacientes;
     }
-    
+
     // ── Móvil ────────────────────────────────────────────────────────────────
-    
     public static RSAutenticacionPaciente loginPaciente(String email, String nip) {
         RSAutenticacionPaciente respuesta = new RSAutenticacionPaciente();
         respuesta.setError(true);
@@ -228,7 +227,7 @@ public class PacienteImp {
         }
         return perfil;
     }
-    
+
     public static Respuesta editarPerfilPaciente(Paciente paciente) {
         Respuesta respuesta = new Respuesta();
         respuesta.setError(true);
@@ -286,7 +285,7 @@ public class PacienteImp {
                     respuesta.setMensaje("El correo actual ingresado no es correcto.");
                     return respuesta;
                 }
-                
+
                 if (existente.getEmail().equalsIgnoreCase(nuevoEmail)) {
                     respuesta.setMensaje("El nuevo correo electrónico es igual al actual.");
                     return respuesta;
@@ -393,14 +392,13 @@ public class PacienteImp {
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
-
     private static boolean existePaciente(SqlSession conexion, int idPaciente) {
         return conexion.selectOne("paciente.obtenerPorId", idPaciente) != null;
     }
 
     private static boolean existeEmail(SqlSession conexion, String email, int idPaciente) {
         Map<String, Object> params = new HashMap<>();
-        params.put("email",      email);
+        params.put("email", email);
         params.put("idPaciente", idPaciente);
         int count = conexion.selectOne("paciente.existeEmail", params);
         return count > 0;
@@ -409,16 +407,20 @@ public class PacienteImp {
     private static String manejarErrorBD(Exception e) {
         String msg = e.getMessage();
         if (msg != null) {
-            if (msg.contains("uq_paciente_email"))    return "El correo electrónico ya está registrado.";
-            if (msg.contains("chk_paciente_telefono")) return "El teléfono debe contener exactamente 10 dígitos.";
-            if (msg.contains("fk_paciente_medico"))    return "El médico indicado no existe.";
+            if (msg.contains("uq_paciente_email")) {
+                return "El correo electrónico ya está registrado.";
+            }
+            if (msg.contains("chk_paciente_telefono")) {
+                return "El teléfono debe contener exactamente 10 dígitos.";
+            }
+            if (msg.contains("fk_paciente_medico")) {
+                return "El médico indicado no existe.";
+            }
         }
         return "Error inesperado en la base de datos.";
     }
 
-
     //T330 - Consultar dietas y progreso (app móvil)
-    
     public static List<ProgresoPaciente> obtenerProgresoPaciente(
             int idPaciente) {
 
