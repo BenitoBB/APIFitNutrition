@@ -20,6 +20,8 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+
+import pojo.Dieta;
 import pojo.Paciente;
 
 @Path("paciente")
@@ -106,5 +108,44 @@ public class PacienteWS {
             @FormParam("nip") String nip) {
 
         return PacienteImp.loginPaciente(email, nip);
+    }
+
+    //T330 - Consultar dietas y progreso (app móvil)
+    
+    @Path("paciente")
+    public class PacienteWS {
+
+    @Path("progreso/{id}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<ProgresoPaciente> obtenerProgresoPaciente(
+            @PathParam("id") String id) {
+
+        if (id == null || id.isEmpty()) {
+            throw new BadRequestException();
+        }
+
+        int idPaciente = Integer.parseInt(id);
+
+        return PacienteImp.obtenerProgresoPaciente(
+                idPaciente
+        );
+    }
+
+    @Path("dietas/{id}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Dieta> obtenerDietasPaciente(
+            @PathParam("id") String id) {
+
+        if (id == null || id.isEmpty()) {
+            throw new BadRequestException();
+        }
+
+        int idPaciente = Integer.parseInt(id);
+
+        return PacienteImp.obtenerDietasPaciente(
+                idPaciente
+        );
     }
 }

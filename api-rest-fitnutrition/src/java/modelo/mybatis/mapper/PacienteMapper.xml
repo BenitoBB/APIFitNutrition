@@ -155,4 +155,37 @@
         WHERE email         = #{email}
           AND codigo_acceso = #{codigoAcceso}
     </select>
+
+    <select id="obtener-progreso-paciente" parameterType="int"  resultType="pojo.ProgresoPaciente">
+        SELECT
+        id_paciente AS idPaciente,
+        nombre,
+        primer_apellido AS primerApellido,
+        segundo_apellido AS segundoApellido,
+        fecha_consulta_fmt AS fechaConsultaFmt,
+        peso,
+        talla,
+        imc,
+        observaciones,
+        nombre_dieta AS nombreDieta
+        FROM vw_progreso_paciente
+        WHERE id_paciente = #{idPaciente}
+    </select>
+    
+    <select id="obtener-dietas-paciente"
+            parameterType="int"
+            resultType="pojo.Dieta">
+
+        SELECT DISTINCT
+        d.id_dieta AS idDieta,
+        d.nombre_dieta AS nombreDieta,
+        d.total_calorias AS totalCalorias,
+        d.observaciones,
+        d.id_medico AS idMedico
+        FROM consulta c
+        INNER JOIN dieta d
+        ON c.id_dieta = d.id_dieta
+        WHERE c.id_paciente = #{idPaciente}
+
+    </select>
 </mapper>

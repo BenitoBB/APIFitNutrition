@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import modelo.mybatis.MyBatisUtil;
 import org.apache.ibatis.session.SqlSession;
+
+import pojo.Dieta;
 import pojo.Medico;
 import pojo.Paciente;
 import utilidades.Constantes;
@@ -412,5 +414,66 @@ public class PacienteImp {
             if (msg.contains("fk_paciente_medico"))    return "El médico indicado no existe.";
         }
         return "Error inesperado en la base de datos.";
+    }
+
+
+    //T330 - Consultar dietas y progreso (app móvil)
+    
+    public static List<ProgresoPaciente> obtenerProgresoPaciente(
+            int idPaciente) {
+
+        List<ProgresoPaciente> progreso = null;
+
+        SqlSession conexionBD = MyBatisUtil.getSession();
+
+        if (conexionBD != null) {
+
+            try {
+
+                progreso = conexionBD.selectList(
+                        "paciente.obtener-progreso-paciente",
+                        idPaciente
+                );
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+            } finally {
+
+                conexionBD.close();
+            }
+        }
+
+        return progreso;
+    }
+
+    public static List<Dieta> obtenerDietasPaciente(
+            int idPaciente) {
+
+        List<Dieta> dietas = null;
+
+        SqlSession conexionBD = MyBatisUtil.getSession();
+
+        if (conexionBD != null) {
+
+            try {
+
+                dietas = conexionBD.selectList(
+                        "paciente.obtener-dietas-paciente",
+                        idPaciente
+                );
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+            } finally {
+
+                conexionBD.close();
+            }
+        }
+
+        return dietas;
     }
 }
