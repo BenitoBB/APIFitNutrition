@@ -86,8 +86,11 @@
             p.email,
             p.telefono,
             p.id_domicilio     AS idDomicilio,
-            p.estatus
+            p.id_medico        AS idMedico,      <!-- agregar esta línea -->
+            p.estatus,
+            CONCAT_WS(' ', m.nombre, m.primer_apellido, m.segundo_apellido) AS medico
         FROM paciente p
+        INNER JOIN medico m ON m.id_medico = p.id_medico
         WHERE p.id_paciente = #{idPaciente}
     </select>
     
@@ -138,22 +141,25 @@
         ORDER BY p.primer_apellido, p.segundo_apellido, p.nombre
     </select>
 
+    <!-- login — agregar JOIN con medico y columna medico -->
     <select id="login" parameterType="map" resultType="pojo.Paciente">
         SELECT
-            id_paciente      AS idPaciente,
-            nombre,
-            primer_apellido  AS primerApellido,
-            segundo_apellido AS segundoApellido,
-            fecha_nacimiento AS fechaNacimiento,
-            sexo,
-            email,
-            telefono,
-            id_domicilio     AS idDomicilio,
-            id_medico        AS idMedico,
-            estatus
-        FROM paciente
-        WHERE email         = #{email}
-          AND codigo_acceso = #{codigoAcceso}
+            p.id_paciente      AS idPaciente,
+            p.nombre,
+            p.primer_apellido  AS primerApellido,
+            p.segundo_apellido AS segundoApellido,
+            p.fecha_nacimiento AS fechaNacimiento,
+            p.sexo,
+            p.email,
+            p.telefono,
+            p.id_domicilio     AS idDomicilio,
+            p.id_medico        AS idMedico,
+            p.estatus,
+            CONCAT_WS(' ', m.nombre, m.primer_apellido, m.segundo_apellido) AS medico
+        FROM paciente p
+        INNER JOIN medico m ON m.id_medico = p.id_medico
+        WHERE p.email         = #{email}
+          AND p.codigo_acceso = #{codigoAcceso}
     </select>
 
     <select id="obtener-progreso-paciente" parameterType="int"  resultType="pojo.ProgresoPaciente">
