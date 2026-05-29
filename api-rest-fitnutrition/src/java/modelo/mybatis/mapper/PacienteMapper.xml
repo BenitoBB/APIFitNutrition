@@ -178,23 +178,6 @@
         WHERE id_paciente = #{idPaciente}
     </select>
     
-    <select id="obtener-dietas-paciente"
-            parameterType="int"
-            resultType="pojo.Dieta">
-
-        SELECT DISTINCT
-        d.id_dieta AS idDieta,
-        d.nombre_dieta AS nombreDieta,
-        d.total_calorias AS totalCalorias,
-        d.observaciones,
-        d.id_medico AS idMedico
-        FROM consulta c
-        INNER JOIN dieta d
-        ON c.id_dieta = d.id_dieta
-        WHERE c.id_paciente = #{idPaciente}
-
-    </select>
-    
     <!-- Guardar (subir) fotografía del paciente -->
     <update id="guardar-fotografia" parameterType="pojo.Paciente">
         UPDATE paciente
@@ -208,5 +191,67 @@
                TO_BASE64(fotografia)    AS fotoBase64
         FROM paciente
         WHERE id_paciente = #{idPaciente}
+    </select>
+    
+        <!-- Mapa para cada alimento con su categoría -->
+    <resultMap id="AlimentoDietaMap" type="pojo.AlimentoDieta">
+        <result property="idAlimento"      column="id_alimento"/>
+        <result property="nombreAlimento"  column="nombre_alimento"/>
+        <result property="porcion"         column="porcion"/>
+        <result property="caloriasPorcion" column="calorias_porcion"/>
+        <result property="cantidad"        column="cantidad"/>
+        <result property="caloriasTotal"   column="calorias_total"/>
+        <result property="idCategoria"     column="id_categoria"/>
+        <result property="nombreCategoria" column="nombre_categoria"/>
+    </resultMap>
+
+    <!-- Mapa principal de DietaPaciente con alimentos anidados -->
+    <resultMap id="DietaPacienteMap" type="pojo.DietaPaciente">
+        <id     property="idDieta"       column="id_dieta"/>
+        <result property="nombreDieta"   column="nombre_dieta"/>
+        <result property="totalCalorias" column="total_calorias"/>
+        <result property="observaciones" column="observaciones"/>
+        <result property="idMedico"      column="id_medico"/>
+        <result property="medico"        column="medico"/>
+        <collection property="alimentos"
+                    column="id_dieta"
+                    select="paciente.obtener-alimentos-dieta"/>
+    </resultMap>
+
+    <!-- Query principal: dietas del paciente -->
+    <select id="obtener-dietas-paciente"
+            parameterType="int"
+            resultMap="DietaPacienteMap">
+        SELECT DISTINCT
+            d.id_dieta          AS id_dieta,
+            d.nombre_dieta      AS nombre_dieta,
+            d.total_calorias    AS total_calorias,
+            d.observaciones     AS observaciones,
+            d.id_medico         AS id_medico,
+            CONCAT_WS(' ', m.nombre, m.primer_apellido, m.segundo_apellido) AS medico
+        FROM consulta c
+        INNER JOIN dieta d      ON c.id_dieta   = d.id_dieta
+        INNER JOIN medico m     ON m.id_medico  = d.id_medico
+        WHERE c.id_paciente = #{idPaciente}
+    </select>
+
+    <!-- Query secundaria: alimentos de una dieta específica -->
+    <select id="obtener-alimentos-dieta"
+            parameterType="int"
+            resultMap="AlimentoDietaMap">
+        SELECT
+            a.id_alimento                             AS id_alimento,
+            a.nombre_alimento                         AS nombre_alimento,
+            a.porcion                                 AS porcion,
+            a.calorias_porcion                        AS calorias_porcion,
+            da.cantidad                               AS cantidad,
+            (da.cantidad * a.calorias_porcion)        AS calorias_total,
+            ch.id_categoria                           AS id_categoria,
+            ch.nombre_categoria                       AS nombre_categoria
+        FROM dieta_alimento da
+        INNER JOIN alimento          a  ON a.id_alimento  = da.id_alimento
+        INNER JOIN categoria_horario ch ON ch.id_categoria = da.id_categoria
+        WHERE da.id_dieta = #{idDieta}
+        ORDER BY ch.id_categoria, a.nombre_alimento
     </select>
 </mapper>

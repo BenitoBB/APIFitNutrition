@@ -23,6 +23,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import pojo.Dieta;
+import pojo.DietaPaciente;
 import pojo.Paciente;
 import pojo.ProgresoPaciente;
 
@@ -129,7 +130,7 @@ public class PacienteWS {
     @Path("dietas/{id}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Dieta> obtenerDietasPaciente(
+    public List<DietaPaciente> obtenerDietasPaciente(
             @PathParam("id") String id) {
 
         if (id == null || id.isEmpty()) {

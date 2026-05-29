@@ -240,30 +240,45 @@ public class CitaImp {
     }
 
     public static Respuesta cancelarCita(Cita cita) {
-    Respuesta respuesta = new Respuesta();
-    respuesta.setError(true);
+        Respuesta respuesta = new Respuesta();
+        respuesta.setError(true);
 
-    SqlSession conexionBD = MyBatisUtil.getSession();
-    if (conexionBD == null) {
-        respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+        SqlSession conexionBD = MyBatisUtil.getSession();
+        if (conexionBD == null) {
+            respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+            return respuesta;
+        }
+        try {
+            int filasAfectadas = conexionBD.update("cita.cancelarCita", cita);
+            if (filasAfectadas > 0) {
+                conexionBD.commit();
+                respuesta.setError(false);
+                respuesta.setMensaje("Cita cancelada exitosamente.");
+            } else {
+                respuesta.setMensaje("No fue posible cancelar la cita.");
+            }
+        } catch (Exception e) {
+            conexionBD.rollback();
+            e.printStackTrace();
+            respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+        } finally {
+            conexionBD.close();
+        }
         return respuesta;
     }
-    try {
-        int filasAfectadas = conexionBD.update("cita.cancelarCita", cita);
-        if (filasAfectadas > 0) {
-            conexionBD.commit();
-            respuesta.setError(false);
-            respuesta.setMensaje("Cita cancelada exitosamente.");
-        } else {
-            respuesta.setMensaje("No fue posible cancelar la cita.");
+    
+    public static CitaMobil proximaCitaPaciente(int idPaciente) {
+        CitaMobil cita = null;
+        SqlSession conexionBD = MyBatisUtil.getSession();
+        if (conexionBD != null) {
+            try {
+                cita = conexionBD.selectOne("cita.proximaCitaPaciente", idPaciente);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                conexionBD.close();
+            }
         }
-    } catch (Exception e) {
-        conexionBD.rollback();
-        e.printStackTrace();
-        respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
-    } finally {
-        conexionBD.close();
-    }
-    return respuesta;
+        return cita;
     }
 }

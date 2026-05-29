@@ -9,6 +9,7 @@ import modelo.mybatis.MyBatisUtil;
 import org.apache.ibatis.session.SqlSession;
 
 import pojo.Dieta;
+import pojo.DietaPaciente;
 import pojo.Medico;
 import pojo.Paciente;
 import pojo.ProgresoPaciente;
@@ -450,32 +451,21 @@ public class PacienteImp {
         return progreso;
     }
 
-    public static List<Dieta> obtenerDietasPaciente(
-            int idPaciente) {
-
-        List<Dieta> dietas = null;
-
+    public static List<DietaPaciente> obtenerDietasPaciente(int idPaciente) {
+        List<DietaPaciente> dietas = null;
         SqlSession conexionBD = MyBatisUtil.getSession();
-
         if (conexionBD != null) {
-
             try {
-
                 dietas = conexionBD.selectList(
                         "paciente.obtener-dietas-paciente",
                         idPaciente
                 );
-
             } catch (Exception e) {
-
                 e.printStackTrace();
-
             } finally {
-
                 conexionBD.close();
             }
         }
-
         return dietas;
     }
     

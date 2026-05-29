@@ -256,6 +256,13 @@ public class CitaWS {
 
         return CitaImp.cancelarCitaPaciente(idCita, idPaciente, motivoCancelacion.trim());
     }
+    
+    @GET
+    @Path("proxima-cita/{idPaciente}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public CitaMobil proximaCitaPaciente(@PathParam("idPaciente") int idPaciente) {
+        return CitaImp.proximaCitaPaciente(idPaciente);
+    }
 
     //T309 - Buscar y consultar citas
     @GET

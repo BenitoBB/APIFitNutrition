@@ -110,21 +110,47 @@
     
     <!-- CARD 29: Historial de citas del paciente (móvil) – SIN observaciones (RN-19) -->
     <select id="obtenerCitasPaciente" resultType="pojo.CitaMobil" parameterType="int">
-        SELECT c.id_cita              as idCita,
-               DATE_FORMAT(c.fecha_cita, '%d/%m/%Y') as fechaCita,
-               c.hora_cita            as horaCita,
-               c.id_paciente          as idPaciente,
-               c.id_medico            as idMedico,
-               c.estatus              as estatus,
-               c.motivo_cancelacion   as motivoCancelacion,
-               DATE_FORMAT(c.fecha_creacion, '%d/%m/%Y %H:%i') as fechaCreacion,
-               m.nombre               as medicoNombre,
-               m.primer_apellido      as medicoPrimerApellido,
-               m.segundo_apellido     as medicoSegundoApellido
+        SELECT c.id_cita              AS idCita,
+               DATE_FORMAT(c.fecha_cita, '%d/%m/%Y') AS fechaCita,
+               c.hora_cita            AS horaCita,
+               c.id_paciente          AS idPaciente,
+               c.id_medico            AS idMedico,
+               c.estatus              AS estatus,
+               c.motivo_cancelacion   AS motivoCancelacion,
+               DATE_FORMAT(c.fecha_creacion, '%d/%m/%Y %H:%i') AS fechaCreacion,
+               m.nombre               AS medicoNombre,
+               m.primer_apellido      AS medicoPrimerApellido,
+               m.segundo_apellido     AS medicoSegundoApellido
         FROM cita c
         INNER JOIN medico m ON c.id_medico = m.id_medico
         WHERE c.id_paciente = #{idPaciente}
+          AND c.estatus IN ('Cancelada', 'Asistida', 'Ausente')
         ORDER BY c.fecha_cita DESC, c.hora_cita DESC
+    </select>
+    
+    <select id="proximaCitaPaciente" parameterType="int" resultType="pojo.CitaMobil">
+        SELECT
+            c.id_cita              AS idCita,
+            c.fecha_cita           AS fechaCita,
+            c.hora_cita            AS horaCita,
+            c.id_paciente          AS idPaciente,
+            c.id_medico            AS idMedico,
+            c.estatus,
+            c.motivo_cancelacion   AS motivoCancelacion,
+            c.fecha_creacion       AS fechaCreacion,
+            m.nombre               AS medicoNombre,
+            m.primer_apellido      AS medicoPrimerApellido,
+            m.segundo_apellido     AS medicoSegundoApellido
+        FROM cita c
+        INNER JOIN medico m ON m.id_medico = c.id_medico
+        WHERE c.id_paciente = #{idPaciente}
+          AND c.estatus IN ('Confirmada', 'Reagendada')
+          AND (
+                c.fecha_cita > CURDATE()
+                OR (c.fecha_cita = CURDATE() AND c.hora_cita >= CURTIME())
+          )
+        ORDER BY c.fecha_cita ASC, c.hora_cita ASC
+        LIMIT 1
     </select>
     
 </mapper>
