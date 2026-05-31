@@ -1,7 +1,9 @@
 package dominio;
 
 import dto.RSAutenticacionPaciente;
+import dto.RSDietasPaciente;
 import dto.Respuesta;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -451,22 +453,35 @@ public class PacienteImp {
         return progreso;
     }
 
-    public static List<DietaPaciente> obtenerDietasPaciente(int idPaciente) {
-        List<DietaPaciente> dietas = null;
+    public static RSDietasPaciente obtenerDietasPaciente(int idPaciente) {
+        RSDietasPaciente response = null;
         SqlSession conexionBD = MyBatisUtil.getSession();
         if (conexionBD != null) {
             try {
-                dietas = conexionBD.selectList(
+                List<DietaPaciente> dietas = conexionBD.selectList(
                         "paciente.obtener-dietas-paciente",
                         idPaciente
                 );
+                if (dietas != null && !dietas.isEmpty()) {
+                    response = new RSDietasPaciente();
+                    List<DietaPaciente> historial = new ArrayList<>();
+
+                    for (DietaPaciente dieta : dietas) {
+                        if (dieta.isEsActual()) {
+                            response.setDietaActual(dieta);
+                        } else {
+                            historial.add(dieta);
+                        }
+                    }
+                    response.setHistorial(historial);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             } finally {
                 conexionBD.close();
             }
         }
-        return dietas;
+        return response;
     }
     
     

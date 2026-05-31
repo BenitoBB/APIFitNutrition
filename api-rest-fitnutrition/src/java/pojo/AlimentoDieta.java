@@ -6,13 +6,10 @@ public class AlimentoDieta {
     private String porcion;
     private double caloriasPorcion;
     private double cantidad;
-    private double caloriasTotal;      // cantidad * calorias_porcion
-    private int idCategoria;
-    private String nombreCategoria;
+    private double caloriasTotal;
 
     public AlimentoDieta() {}
 
-    // Getters y Setters
     public int getIdAlimento() { return idAlimento; }
     public void setIdAlimento(int idAlimento) { this.idAlimento = idAlimento; }
 
@@ -30,10 +27,4 @@ public class AlimentoDieta {
 
     public double getCaloriasTotal() { return caloriasTotal; }
     public void setCaloriasTotal(double caloriasTotal) { this.caloriasTotal = caloriasTotal; }
-
-    public int getIdCategoria() { return idCategoria; }
-    public void setIdCategoria(int idCategoria) { this.idCategoria = idCategoria; }
-
-    public String getNombreCategoria() { return nombreCategoria; }
-    public void setNombreCategoria(String nombreCategoria) { this.nombreCategoria = nombreCategoria; }
 }

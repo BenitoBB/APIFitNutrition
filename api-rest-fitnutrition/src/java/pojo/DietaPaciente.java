@@ -9,11 +9,12 @@ public class DietaPaciente {
     private String observaciones;
     private int idMedico;
     private String medico;
-    private List<AlimentoDieta> alimentos;
+    private List<CategoriaHorarioDieta> categorias;
+    private boolean esActual;
+
 
     public DietaPaciente() {}
 
-    // Getters y Setters
     public int getIdDieta() { return idDieta; }
     public void setIdDieta(int idDieta) { this.idDieta = idDieta; }
 
@@ -32,6 +33,9 @@ public class DietaPaciente {
     public String getMedico() { return medico; }
     public void setMedico(String medico) { this.medico = medico; }
 
-    public List<AlimentoDieta> getAlimentos() { return alimentos; }
-    public void setAlimentos(List<AlimentoDieta> alimentos) { this.alimentos = alimentos; }
+    public List<CategoriaHorarioDieta> getCategorias() { return categorias; }
+    public void setCategorias(List<CategoriaHorarioDieta> categorias) { this.categorias = categorias; }
+    
+    public boolean isEsActual() { return esActual; }
+    public void setEsActual(boolean esActual) { this.esActual = esActual; }
 }
