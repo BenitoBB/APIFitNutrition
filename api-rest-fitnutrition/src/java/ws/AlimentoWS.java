@@ -15,7 +15,9 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import pojo.Alimento;
 import utilidades.Validaciones;
 
@@ -81,12 +83,14 @@ public class AlimentoWS {
     @GET
     @Path("buscar")
     @Produces(MediaType.APPLICATION_JSON)
-    public Object buscar(@QueryParam("nombre") String nombre) {
+    public Response buscar(@QueryParam("nombre") String nombre) {
         if (Validaciones.esVacio(nombre) || nombre.trim().length() < 2) {
-            return new Respuesta(true, "La búsqueda debe tener al menos 2 caracteres.");
+            return Response.ok(new Respuesta(true, "La búsqueda debe tener al menos 2 caracteres.")).build();
         }
 
-        return AlimentoImp.buscarPorNombre(nombre.trim());
+        List<Alimento> resultado = AlimentoImp.buscarPorNombre(nombre.trim());
+        GenericEntity<List<Alimento>> entity = new GenericEntity<List<Alimento>>(resultado) {};
+        return Response.ok(entity).build();
     }
 
     // ── T323: Editar alimento ─────────────────────────────────────────────────

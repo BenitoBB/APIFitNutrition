@@ -17,7 +17,7 @@
                porcion,
                calorias_porcion AS caloriasPorcion
         FROM alimento
-        WHERE nombre_alimento LIKE CONCAT('%', #{nombre}, '%')
+        WHERE nombre_alimento LIKE CONCAT('%', #{value}, '%')
         ORDER BY nombre_alimento
     </select>
 
