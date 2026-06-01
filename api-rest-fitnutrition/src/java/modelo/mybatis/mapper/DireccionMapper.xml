@@ -12,17 +12,32 @@
         WHERE c.codigo_postal = #{codigoPostal}
     </select>
     
-     <insert id="insertar" parameterType="map"
-            useGeneratedKeys="true" keyProperty="idDomicilio">
+    <insert id="crear-direccion" parameterType="pojo.Direccion"
+            useGeneratedKeys="true" keyProperty="idDireccion">
         INSERT INTO domicilio (calle, numero, id_colonia)
         VALUES (#{calle}, #{numero}, #{idColonia})
     </insert>
 
-    <update id="actualizar" parameterType="map">
+    <update id="editar" parameterType="pojo.Direccion">
         UPDATE domicilio SET
             calle      = #{calle},
             numero     = #{numero},
             id_colonia = #{idColonia}
-        WHERE id_domicilio = #{idDomicilio}
+        WHERE id_domicilio = #{idDireccion}
     </update>
+
+    <delete id="eliminar" parameterType="int">
+        DELETE FROM domicilio WHERE id_domicilio = #{value}
+    </delete>
+
+    <select id="obtener-direccion-id" resultType="pojo.Direccion" parameterType="int">
+        SELECT d.id_domicilio AS idDireccion, d.calle, d.numero,
+               c.id AS idColonia, c.nombre AS colonia, c.ciudad,
+               m.nombre AS municipio, e.nombre AS estado, c.codigo_postal AS codigoPostal
+        FROM domicilio d
+        INNER JOIN colonias c ON d.id_colonia = c.id
+        INNER JOIN municipios m ON c.municipio = m.id
+        INNER JOIN estados e ON m.estado = e.id
+        WHERE d.id_domicilio = #{idDireccion}
+    </select>
 </mapper>

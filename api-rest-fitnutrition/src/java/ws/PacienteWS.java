@@ -7,7 +7,6 @@ package ws;
 import com.google.gson.Gson;
 import dominio.PacienteImp;
 import dto.RSAutenticacionPaciente;
-import dto.RSDietasPaciente;
 import dto.Respuesta;
 import java.util.List;
 import javax.ws.rs.BadRequestException;
@@ -24,7 +23,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 
 import pojo.Dieta;
-import pojo.DietaPaciente;
 import pojo.Paciente;
 import pojo.ProgresoPaciente;
 
@@ -37,7 +35,11 @@ public class PacienteWS {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Respuesta registrarPaciente(String json) {
-        return PacienteImp.registrarPaciente(new Gson().fromJson(json, Paciente.class));
+        Paciente paciente = new Gson().fromJson(json, Paciente.class);
+        if (paciente.getIdDomicilio() == null || paciente.getIdDomicilio() <= 0) {
+            throw new BadRequestException("La dirección es obligatoria");
+        }
+        return PacienteImp.registrarPaciente(paciente);
     }
 
     @Path("editar")
@@ -45,7 +47,11 @@ public class PacienteWS {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Respuesta actualizarPaciente(String json) {
-        return PacienteImp.actualizarPaciente(new Gson().fromJson(json, Paciente.class));
+        Paciente paciente = new Gson().fromJson(json, Paciente.class);
+        if (paciente.getIdDomicilio() == null || paciente.getIdDomicilio() <= 0) {
+            throw new BadRequestException("La dirección es obligatoria");
+        }
+        return PacienteImp.actualizarPaciente(paciente);
     }
 
     @Path("baja/{idPaciente}")
@@ -131,7 +137,7 @@ public class PacienteWS {
     @Path("dietas/{id}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public RSDietasPaciente obtenerDietasPaciente(
+    public List<Dieta> obtenerDietasPaciente(
             @PathParam("id") String id) {
 
         if (id == null || id.isEmpty()) {

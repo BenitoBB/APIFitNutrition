@@ -49,21 +49,29 @@
         WHERE id_paciente = #{idPaciente}
     </update>
     
-    <select id="obtenerPorId" parameterType="int" resultType="pojo.Paciente">
+      <select id="obtenerPorId" parameterType="int" resultType="pojo.Paciente">
         SELECT
-            id_paciente      AS idPaciente,
-            nombre,
-            primer_apellido  AS primerApellido,
-            segundo_apellido AS segundoApellido,
-            fecha_nacimiento AS fechaNacimiento,
-            sexo, peso, estatura, talla,
-            email, telefono,
-            id_domicilio     AS idDomicilio,
-            codigo_acceso    AS codigoAcceso,
-            id_medico        AS idMedico,
-            estatus
-        FROM paciente
-        WHERE id_paciente = #{idPaciente}
+            p.id_paciente      AS idPaciente,
+            p.nombre,
+            p.primer_apellido  AS primerApellido,
+            p.segundo_apellido AS segundoApellido,
+            p.fecha_nacimiento AS fechaNacimiento,
+            p.sexo, p.peso, p.estatura, p.talla,
+            p.email, p.telefono,
+            p.id_domicilio     AS idDomicilio,
+            p.codigo_acceso    AS codigoAcceso,
+            p.id_medico        AS idMedico,
+            p.estatus,
+            d.calle, d.numero, d.id_colonia AS idColonia,
+            c.nombre AS nombreColonia, c.codigo_postal AS codigoPostal,
+            m.nombre AS ciudad, e.nombre AS estado,
+            CONCAT_WS(', ', CONCAT_WS(' ', d.calle, d.numero), NULLIF(c.nombre, ''), CONCAT('C.P. ', NULLIF(c.codigo_postal, '')), NULLIF(m.nombre, ''), NULLIF(e.nombre, '')) AS direccionCompleta
+        FROM paciente p
+        LEFT JOIN domicilio d ON p.id_domicilio = d.id_domicilio
+        LEFT JOIN colonias c ON d.id_colonia = c.id
+        LEFT JOIN municipios m ON c.municipio = m.id
+        LEFT JOIN estados e ON m.estado = e.id
+        WHERE p.id_paciente = #{idPaciente}
     </select>
 
     <select id="existeEmail" parameterType="map" resultType="int">
@@ -88,9 +96,17 @@
             p.id_domicilio     AS idDomicilio,
             p.id_medico        AS idMedico,      <!-- agregar esta línea -->
             p.estatus,
-            CONCAT_WS(' ', m.nombre, m.primer_apellido, m.segundo_apellido) AS medico
+            CONCAT_WS(' ', med.nombre, med.primer_apellido, med.segundo_apellido) AS medico,
+            d.calle, d.numero, d.id_colonia AS idColonia,
+            c.nombre AS nombreColonia, c.codigo_postal AS codigoPostal,
+            m.nombre AS ciudad, e.nombre AS estado,
+            CONCAT_WS(', ', CONCAT_WS(' ', d.calle, d.numero), NULLIF(c.nombre, ''), CONCAT('C.P. ', NULLIF(c.codigo_postal, '')), NULLIF(m.nombre, ''), NULLIF(e.nombre, '')) AS direccionCompleta
         FROM paciente p
-        INNER JOIN medico m ON m.id_medico = p.id_medico
+        INNER JOIN medico med ON med.id_medico = p.id_medico
+        LEFT JOIN domicilio d ON p.id_domicilio = d.id_domicilio
+        LEFT JOIN colonias c ON d.id_colonia = c.id
+        LEFT JOIN municipios m ON c.municipio = m.id
+        LEFT JOIN estados e ON m.estado = e.id
         WHERE p.id_paciente = #{idPaciente}
     </select>
     
@@ -121,6 +137,7 @@
             p.email,
             p.telefono,
             p.id_domicilio     AS idDomicilio,
+            p.id_medico        AS idMedico,
             p.estatus,
             d.calle,
             d.numero,
@@ -155,13 +172,21 @@
             p.id_domicilio     AS idDomicilio,
             p.id_medico        AS idMedico,
             p.estatus,
-            CONCAT_WS(' ', m.nombre, m.primer_apellido, m.segundo_apellido) AS medico
+            CONCAT_WS(' ', med.nombre, med.primer_apellido, med.segundo_apellido) AS medico,
+            d.calle, d.numero, d.id_colonia AS idColonia,
+            c.nombre AS nombreColonia, c.codigo_postal AS codigoPostal,
+            m.nombre AS ciudad, e.nombre AS estado,
+            CONCAT_WS(', ', CONCAT_WS(' ', d.calle, d.numero), NULLIF(c.nombre, ''), CONCAT('C.P. ', NULLIF(c.codigo_postal, '')), NULLIF(m.nombre, ''), NULLIF(e.nombre, '')) AS direccionCompleta
         FROM paciente p
-        INNER JOIN medico m ON m.id_medico = p.id_medico
+        INNER JOIN medico med ON med.id_medico = p.id_medico
+        LEFT JOIN domicilio d ON p.id_domicilio = d.id_domicilio
+        LEFT JOIN colonias c ON d.id_colonia = c.id
+        LEFT JOIN municipios m ON c.municipio = m.id
+        LEFT JOIN estados e ON m.estado = e.id
         WHERE p.email         = #{email}
           AND p.codigo_acceso = #{codigoAcceso}
     </select>
-
+    
     <select id="obtener-progreso-paciente" parameterType="int"  resultType="pojo.ProgresoPaciente">
         SELECT
         id_paciente AS idPaciente,
