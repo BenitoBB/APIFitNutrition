@@ -7,6 +7,7 @@ package ws;
 import com.google.gson.Gson;
 import dominio.PacienteImp;
 import dto.RSAutenticacionPaciente;
+import dto.RSDietasPaciente;
 import dto.Respuesta;
 import java.util.List;
 import javax.ws.rs.BadRequestException;
@@ -137,7 +138,7 @@ public class PacienteWS {
     @Path("dietas/{id}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Dieta> obtenerDietasPaciente(
+    public RSDietasPaciente obtenerDietasPaciente(
             @PathParam("id") String id) {
 
         if (id == null || id.isEmpty()) {
@@ -146,7 +147,7 @@ public class PacienteWS {
 
         int idPaciente = Integer.parseInt(id);
 
-        return PacienteImp.obtenerDietasPaciente(
+        return  PacienteImp.obtenerDietasPaciente(
                 idPaciente
         );
     }
