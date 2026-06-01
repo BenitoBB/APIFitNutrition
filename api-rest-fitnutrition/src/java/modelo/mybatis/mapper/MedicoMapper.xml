@@ -35,22 +35,31 @@
         WHERE id_medico = #{idMedico}
     </update>
 
-    <select id="obtenerPorId" parameterType="int" resultType="pojo.Medico">
+   <select id="obtenerPorId" parameterType="int" resultType="pojo.Medico">
         SELECT
-            id_medico          AS idMedico,
-            nombre,
-            primer_apellido    AS primerApellido,
-            segundo_apellido   AS segundoApellido,
-            fecha_nacimiento   AS fechaNacimiento,
-            sexo,
-            id_domicilio       AS idDomicilio,
-            no_personal        AS noPersonal,
-            cedula_profesional AS cedulaProfesional,
-            es_administrador   AS esAdministrador,
-            estatus
-        FROM medico
-        WHERE id_medico = #{idMedico}
+            p.id_medico          AS idMedico,
+            p.nombre,
+            p.primer_apellido    AS primerApellido,
+            p.segundo_apellido   AS segundoApellido,
+            p.fecha_nacimiento   AS fechaNacimiento,
+            p.sexo,
+            p.id_domicilio       AS idDomicilio,
+            p.no_personal        AS noPersonal,
+            p.cedula_profesional AS cedulaProfesional,
+            p.es_administrador   AS esAdministrador,
+            p.estatus,
+            d.calle, d.numero, d.id_colonia AS idColonia,
+            c.nombre AS nombreColonia, c.codigo_postal AS codigoPostal,
+            m.nombre AS ciudad, e.nombre AS estado,
+            CONCAT_WS(', ', CONCAT_WS(' ', d.calle, d.numero), NULLIF(c.nombre, ''), CONCAT('C.P. ', NULLIF(c.codigo_postal, '')), NULLIF(m.nombre, ''), NULLIF(e.nombre, '')) AS direccionCompleta
+        FROM medico p
+        LEFT JOIN domicilio d ON p.id_domicilio = d.id_domicilio
+        LEFT JOIN colonias c ON d.id_colonia = c.id
+        LEFT JOIN municipios m ON c.municipio = m.id
+        LEFT JOIN estados e ON m.estado = e.id
+        WHERE p.id_medico = #{idMedico}
     </select>
+
 
     <select id="existeNoPersonal" parameterType="map" resultType="int">
         SELECT COUNT(*) FROM medico
@@ -72,30 +81,38 @@
     </update>
     
     <select id="buscarMedicos" resultType="pojo.Medico" parameterType="map">
-        SELECT id_medico AS idMedico, 
-            nombre, 
-            primer_apellido AS primerApellido, 
-            segundo_apellido AS segundoApellido, 
-            DATE_FORMAT(fecha_nacimiento, '%Y-%m-%d') AS fechaNacimiento, 
-            sexo, 
-            id_domicilio AS idDomicilio, 
-            no_personal AS noPersonal, 
-            cedula_profesional AS cedulaProfesional, 
-            es_administrador AS esAdministrador, 
-            estatus 
-        FROM medico 
+        SELECT p.id_medico AS idMedico, 
+            p.nombre, 
+            p.primer_apellido AS primerApellido, 
+            p.segundo_apellido AS segundoApellido, 
+            DATE_FORMAT(p.fecha_nacimiento, '%Y-%m-%d') AS fechaNacimiento, 
+            p.sexo, 
+            p.id_domicilio AS idDomicilio, 
+            p.no_personal AS noPersonal, 
+            p.cedula_profesional AS cedulaProfesional, 
+            p.es_administrador AS esAdministrador, 
+            p.estatus,
+            d.calle, d.numero, d.id_colonia AS idColonia,
+            c.nombre AS nombreColonia, c.codigo_postal AS codigoPostal,
+            m.nombre AS ciudad, e.nombre AS estado,
+            CONCAT_WS(', ', CONCAT_WS(' ', d.calle, d.numero), NULLIF(c.nombre, ''), CONCAT('C.P. ', NULLIF(c.codigo_postal, '')), NULLIF(m.nombre, ''), NULLIF(e.nombre, '')) AS direccionCompleta
+        FROM medico p
+        LEFT JOIN domicilio d ON p.id_domicilio = d.id_domicilio
+        LEFT JOIN colonias c ON d.id_colonia = c.id
+        LEFT JOIN municipios m ON c.municipio = m.id
+        LEFT JOIN estados e ON m.estado = e.id
         <where>
-            AND estatus = 1 
-            AND es_administrador = 0 
+            AND p.estatus = 1 
+            AND p.es_administrador = 0 
             <if test="criterio != null and criterio != ''">
                 AND ( 
-                nombre LIKE CONCAT('%', #{criterio}, '%') 
-                OR primer_apellido LIKE CONCAT('%', #{criterio}, '%') 
-                OR no_personal LIKE CONCAT('%', #{criterio}, '%') 
+                p.nombre LIKE CONCAT('%', #{criterio}, '%') 
+                OR p.primer_apellido LIKE CONCAT('%', #{criterio}, '%') 
+                OR p.no_personal LIKE CONCAT('%', #{criterio}, '%') 
                 ) 
             </if>
         </where>
-        ORDER BY primer_apellido, nombre 
+        ORDER BY p.primer_apellido, p.nombre 
     </select>
     
      <select id="validarMedicoBaja" resultType="int" parameterType="int">

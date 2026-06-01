@@ -14,6 +14,8 @@ public class Consulta {
     private double talla;
     private Double imc; // Double porque permite NULL
     private Integer idDieta; // Integer porque permite NULL
+    private String nombreDieta;
+    private int cancelada;
     private String observaciones;
 
     public Consulta(int idConsulta, int idPaciente, int idMedico, Integer idCita, String fechaConsulta, double peso, double talla, Double imc, Integer idDieta, String observaciones) {
@@ -104,6 +106,22 @@ public class Consulta {
 
     public void setIdDieta(Integer idDieta) {
         this.idDieta = idDieta;
+    }
+
+    public String getNombreDieta() {
+        return nombreDieta;
+    }
+
+    public void setNombreDieta(String nombreDieta) {
+        this.nombreDieta = nombreDieta;
+    }
+
+    public int getCancelada() {
+        return cancelada;
+    }
+
+    public void setCancelada(int cancelada) {
+        this.cancelada = cancelada;
     }
 
     public String getObservaciones() {

@@ -47,7 +47,11 @@ public class MedicoWS {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Respuesta registrarMedico(String json) {
-        return MedicoImp.registrarMedico(new Gson().fromJson(json, Medico.class));
+        Medico medico = new Gson().fromJson(json, Medico.class);
+        if (medico.getIdDomicilio() == null || medico.getIdDomicilio() <= 0) {
+            throw new BadRequestException("La dirección es obligatoria");
+        }
+        return MedicoImp.registrarMedico(medico);
     }
 
     @Path("editar")
@@ -55,7 +59,11 @@ public class MedicoWS {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Respuesta editarMedico(String json) {
-        return MedicoImp.editarMedico(new Gson().fromJson(json, Medico.class));
+        Medico medico = new Gson().fromJson(json, Medico.class);
+        if (medico.getIdDomicilio() == null || medico.getIdDomicilio() <= 0) {
+            throw new BadRequestException("La dirección es obligatoria");
+        }
+        return MedicoImp.editarMedico(medico);
     }
     
     @GET

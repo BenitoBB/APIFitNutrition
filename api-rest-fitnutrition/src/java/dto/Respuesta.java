@@ -11,6 +11,7 @@ package dto;
 public class Respuesta {
     private boolean error;
     private String mensaje;
+    private Object valor;
 
     public Respuesta() {
     }
@@ -18,6 +19,12 @@ public class Respuesta {
     public Respuesta(boolean error, String mensaje) {
         this.error = error;
         this.mensaje = mensaje;
+    }
+
+    public Respuesta(boolean error, String mensaje, Object valor) {
+        this.error = error;
+        this.mensaje = mensaje;
+        this.valor = valor;
     }
 
     public boolean isError() {
@@ -35,7 +42,12 @@ public class Respuesta {
     public void setMensaje(String mensaje) {
         this.mensaje = mensaje;
     }
-    
-    
-    
+
+    public Object getValor() {
+        return valor;
+    }
+
+    public void setValor(Object valor) {
+        this.valor = valor;
+    }
 }

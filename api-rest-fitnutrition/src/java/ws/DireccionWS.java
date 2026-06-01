@@ -30,4 +30,41 @@ public class DireccionWS {
 
          return DireccionImp.obtenerDireccionCodigoPostal(cp);
     }
+
+    @Path("crear-direccion")
+    @POST
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public dto.Respuesta crearDireccion(String json) {
+        com.google.gson.Gson gson = new com.google.gson.Gson();
+        Direccion direccion = gson.fromJson(json, Direccion.class);
+        if (Validaciones.esVacio(direccion.getCalle()))
+            throw new BadRequestException("La calle es obligatoria");
+        if (direccion.getIdColonia() == null || direccion.getIdColonia() <= 0)
+            throw new BadRequestException("El idColonia es obligatorio");
+        return DireccionImp.crearDireccion(direccion);
+    }
+
+    @Path("editar")
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public dto.Respuesta editar(String json) {
+        com.google.gson.Gson gson = new com.google.gson.Gson();
+        Direccion direccion = gson.fromJson(json, Direccion.class);
+        if (direccion.getIdDireccion() == null || direccion.getIdDireccion() <= 0) {
+            throw new BadRequestException("El idDireccion es obligatorio");
+        }
+        return DireccionImp.editar(direccion);
+    }
+
+    @Path("obtener-direccion-id/{idDireccion}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Direccion obtenerDireccionPorId(@PathParam("idDireccion") Integer idDireccion){
+        if (idDireccion == null || idDireccion <= 0) {
+            throw new BadRequestException("El idDireccion es inválido");
+        }
+        return DireccionImp.obtenerDireccionPorId(idDireccion);
+    }
 }
