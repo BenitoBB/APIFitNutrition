@@ -40,13 +40,16 @@ public class PacienteImp {
                     return respuesta;
                 }
 
-                // CORRECCIÓN: armar el map igual que en actualizarEmail
                 if (existeEmail(conexion, paciente.getEmail(), 0)) {
                     respuesta.setMensaje("El correo electrónico ya se encuentra registrado.");
                     return respuesta;
                 }
 
-                paciente.setCodigoAcceso(Seguridad.hashear(paciente.getCodigoAcceso()));
+                // 1. Generar NIP aleatorio de 4 dígitos
+                String nipGenerado = String.format("%04d", new java.util.Random().nextInt(10000));
+                
+                // 2. Asignar el NIP hasheado para guardarlo en la BD
+                paciente.setCodigoAcceso(Seguridad.hashear(nipGenerado));
                 paciente.setEstatus(1);
 
                 int filas = conexion.insert("paciente.registrar", paciente);
@@ -55,6 +58,8 @@ public class PacienteImp {
                     conexion.commit();
                     respuesta.setError(false);
                     respuesta.setMensaje("Paciente registrado exitosamente.");
+                    // 3. Devolver el NIP crudo en el "valor" para que JavaFX lo lea
+                    respuesta.setValor(nipGenerado); 
                 } else {
                     respuesta.setMensaje("No se pudo registrar al paciente.");
                 }

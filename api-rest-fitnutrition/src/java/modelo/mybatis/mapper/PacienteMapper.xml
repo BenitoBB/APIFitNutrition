@@ -4,19 +4,24 @@
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="paciente">
-    <insert id="registrar" parameterType="pojo.Paciente" useGeneratedKeys="true" keyProperty="idPaciente">
+   
+       <insert id="registrar" parameterType="pojo.Paciente">
+        <selectKey keyProperty="idPaciente" resultType="int" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
         INSERT INTO paciente (
             nombre, primer_apellido, segundo_apellido,
             fecha_nacimiento, sexo, peso, estatura, talla,
             email, telefono, id_domicilio,
             codigo_acceso, id_medico, estatus
         ) VALUES (
-            #{nombre}, #{primerApellido}, #{segundoApellido},
-            #{fechaNacimiento}, #{sexo}, #{peso}, #{estatura}, #{talla},
+            #{nombre}, #{primerApellido}, #{segundoApellido, jdbcType=VARCHAR},
+            #{fechaNacimiento}, #{sexo}, #{peso, jdbcType=FLOAT}, #{estatura, jdbcType=FLOAT}, #{talla, jdbcType=FLOAT},
             #{email}, #{telefono}, #{idDomicilio},
-            #{codigoAcceso}, #{idMedico}, #{estatus}
+            #{codigoAcceso}, #{idMedico}, 1
         )
     </insert>
+
     
     <update id="actualizar" parameterType="pojo.Paciente">
         UPDATE paciente SET
@@ -139,11 +144,15 @@
             p.id_domicilio     AS idDomicilio,
             p.id_medico        AS idMedico,
             p.estatus,
-            d.calle,
-            d.numero,
-            d.id_colonia       AS idColonia
+            d.calle, d.numero, d.id_colonia AS idColonia,
+            c.nombre AS nombreColonia, c.codigo_postal AS codigoPostal,
+            m.nombre AS ciudad, e.nombre AS estado,
+            CONCAT_WS(', ', CONCAT_WS(' ', d.calle, d.numero), NULLIF(c.nombre, ''), CONCAT('C.P. ', NULLIF(c.codigo_postal, '')), NULLIF(m.nombre, ''), NULLIF(e.nombre, '')) AS direccionCompleta
         FROM paciente p
-        LEFT JOIN domicilio d ON d.id_domicilio = p.id_domicilio
+        LEFT JOIN domicilio d ON p.id_domicilio = d.id_domicilio
+        LEFT JOIN colonias c ON d.id_colonia = c.id
+        LEFT JOIN municipios m ON c.municipio = m.id
+        LEFT JOIN estados e ON m.estado = e.id
         WHERE (
             p.nombre           LIKE CONCAT('%', #{criterio}, '%')
             OR p.primer_apellido  LIKE CONCAT('%', #{criterio}, '%')
