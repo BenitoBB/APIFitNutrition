@@ -5,6 +5,8 @@ import java.util.List;
 import modelo.mybatis.MyBatisUtil;
 import org.apache.ibatis.session.SqlSession;
 import pojo.Consulta;
+import utilidades.Constantes;
+
 
 public class ConsultaImp {
 
@@ -96,5 +98,86 @@ public class ConsultaImp {
 
         return resultado;
     }
+
+        public static List<Consulta> buscarConsultasPaciente(int idPaciente) {
+
+        List<Consulta> consultas = null;
+
+        SqlSession conexionBD = MyBatisUtil.getSession();
+
+        if (conexionBD != null) {
+
+            try {
+
+                consultas = conexionBD.selectList(
+                        "consulta.buscar-consultas-paciente",
+                        idPaciente
+                );
+
+            } catch (Exception e) {
+
+                throw new RuntimeException(e.getMessage());
+
+            } finally {
+
+                conexionBD.close();
+
+            }
+        }
+
+        return consultas;
+    }
+
+    public static Respuesta cancelarConsulta(int idConsulta) {
+
+    Respuesta respuesta = new Respuesta();
+
+    SqlSession conexionBD = MyBatisUtil.getSession();
+
+    if (conexionBD != null) {
+
+        try {
+
+            int filasAfectadas = conexionBD.update(
+                    "consulta.cancelar-consulta",
+                    idConsulta
+            );
+
+            conexionBD.commit();
+
+            if (filasAfectadas > 0) {
+
+                respuesta.setError(false);
+                respuesta.setMensaje("Consulta cancelada correctamente");
+
+            } else {
+
+                respuesta.setError(true);
+                respuesta.setMensaje(
+                        "La consulta no existe o ya fue cancelada"
+                );
+            }
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            conexionBD.rollback();
+            respuesta.setError(true);
+            respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+
+        } finally {
+
+            conexionBD.close();
+        }
+
+    } else {
+
+        respuesta.setError(true);
+        respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+    }
+
+    return respuesta;
+}
+
 
 }

@@ -25,6 +25,7 @@ import utilidades.Validaciones;
  *
  * @author julia
  */
+@Path("cita")
 public class CitaWS {
     @POST
     @Path("crear")
@@ -255,4 +256,60 @@ public class CitaWS {
 
         return CitaImp.cancelarCitaPaciente(idCita, idPaciente, motivoCancelacion.trim());
     }
+    
+    @GET
+    @Path("proxima-cita/{idPaciente}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public CitaMobil proximaCitaPaciente(@PathParam("idPaciente") int idPaciente) {
+        return CitaImp.proximaCitaPaciente(idPaciente);
+    }
+
+    //T309 - Buscar y consultar citas
+    @GET
+    @Path("buscar")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<CitaDetalle> buscar(
+            @QueryParam("criterio") String criterio,
+            @QueryParam("idMedico") Integer idMedico,
+            @QueryParam("estatus") String estatus) {
+        // idMedico = 0 o null → es administrador, ve todas las citas
+        return CitaImp.buscarCitas(criterio, idMedico, estatus);
+    }
+
+    @PUT
+    @Path("cancelar")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Respuesta cancelar(Cita cita) {
+
+        // ── Validación básica de entrada ──────────────────────────────────────
+        if (cita == null || cita.getIdCita() <= 0) {
+            return new Respuesta(true, "El ID de la cita es obligatorio.");
+        }
+
+        // ── Verificar que la cita existe ──────────────────────────────────────
+        Cita citaExistente = CitaImp.buscarCitaPorId(cita.getIdCita());
+        if (citaExistente == null) {
+            return new Respuesta(true, "La cita no existe.");
+        }
+
+        // ── RF-09: Solo cancelable si estatus es Confirmada o Reagendada ──────
+        String estatus = citaExistente.getEstatus();
+        if (!"Confirmada".equals(estatus) && !"Reagendada".equals(estatus)) {
+            return new Respuesta(true,
+                    "Solo se pueden cancelar citas con estatus 'Confirmada' o 'Reagendada'.");
+        }
+
+        // ── motivo_cancelacion: opcional desde escritorio (RN-09) ─────────────
+        // Se transfiere tal cual, puede llegar null o vacío — ambos son válidos
+        cita.setMotivoCancelacion(
+                Validaciones.esVacio(cita.getMotivoCancelacion())
+                ? null
+                : cita.getMotivoCancelacion().trim()
+        );
+
+        // ── Todas las validaciones pasaron → cancelar ─────────────────────────
+        return CitaImp.cancelarCita(cita);
+    }
+
 }

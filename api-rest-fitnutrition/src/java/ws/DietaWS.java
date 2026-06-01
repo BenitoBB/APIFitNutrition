@@ -18,6 +18,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import pojo.Dieta;
 import pojo.DietaDetalle;
 import pojo.DietaResumen;
@@ -95,17 +96,17 @@ public class DietaWS {
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Object obtenerDetalle(@PathParam("id") int idDieta) {
+    public Response obtenerDetalle(@PathParam("id") int idDieta) {
         if (idDieta <= 0) {
-            return new Respuesta(true, "El ID de la dieta es obligatorio.");
+            return Response.ok(new Respuesta(true, "El ID de la dieta es obligatorio.")).build();
         }
 
         DietaDetalle detalle = DietaImp.obtenerDetallePorId(idDieta);
         if (detalle == null) {
-            return new Respuesta(true, "La dieta no existe.");
+            return Response.ok(new Respuesta(true, "La dieta no existe.")).build();
         }
 
-        return detalle;
+        return Response.ok(detalle).build();
     }
 
     // ── T319: Modificar dieta ─────────────────────────────────────────────────

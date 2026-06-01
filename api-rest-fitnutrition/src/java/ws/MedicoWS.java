@@ -1,24 +1,46 @@
 package ws;
 
 import com.google.gson.Gson;
+import dominio.AutenticacionImp;
 import dominio.MedicoImp;
 import dto.RQBajaMedico;
+import dto.RSAutenticacionMedico;
 import dto.Respuesta;
 import java.util.ArrayList;
 import java.util.List;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import pojo.Medico;
+import utilidades.Validaciones;
 
 @Path("medico")
 public class MedicoWS {
+
+    @POST
+    @Path("login")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public RSAutenticacionMedico login(Medico credentials) {
+        if (credentials == null || Validaciones.esVacio(credentials.getNoPersonal()) || Validaciones.esVacio(credentials.getContrasena())) {
+            return new RSAutenticacionMedico(true, "El número de personal y la contraseña son obligatorios.", null, false);
+        }
+
+        // Validación: Máximo 9 caracteres alfanuméricos
+        if (!Validaciones.esAlfanumericoConLongitudMaxima(credentials.getNoPersonal(), 9)) {
+            return new RSAutenticacionMedico(true, "Número de personal inválido (debe ser alfanumérico de máximo 9 caracteres).", null, false);
+        }
+
+        return AutenticacionImp.loginMedico(credentials.getNoPersonal().trim(), credentials.getContrasena());
+    }
 
     @Path("registrar")
     @POST
@@ -85,5 +107,32 @@ public class MedicoWS {
             @FormParam("contrasenaNueva")   String contrasenaNueva) {
         return MedicoImp.cambiarContrasena(idMedico, contrasenaActual, contrasenaNueva);
     }
+    
+    @Path("subir-fotografia/{idMedico}")
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    public Respuesta subirFotografia(
+            @PathParam("idMedico") Integer idMedico,
+            byte[] fotografia) {
+ 
+        if (idMedico != null && idMedico > 0
+                && fotografia != null && fotografia.length > 0) {
+            return MedicoImp.guardarFotografia(idMedico, fotografia);
+        }
+        throw new BadRequestException();
+    }
+    
+    @Path("obtener-fotografia/{idMedico}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public Medico obtenerFotografia(
+            @PathParam("idMedico") Integer idMedico) {
+ 
+        if (idMedico != null && idMedico > 0) {
+            return MedicoImp.obtenerFotografia(idMedico);
+        }
+        throw new BadRequestException();
+    }
+
 
 }

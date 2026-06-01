@@ -23,8 +23,60 @@
         INSERT INTO cita (fecha_cita, hora_cita, id_paciente, id_medico, observaciones, estatus) 
         VALUES (#{fechaCita}, #{horaCita}, #{idPaciente}, #{idMedico}, #{observaciones}, 'Confirmada')
     </insert>
+
+    <select id="buscarCitas" resultType="pojo.CitaDetalle" parameterType="map">
+        SELECT c.id_cita as idCita, 
+        DATE_FORMAT(c.fecha_cita, '%Y-%m-%d') as fechaCita, 
+        c.hora_cita as horaCita, 
+        c.id_paciente as idPaciente, 
+        c.id_medico as idMedico, 
+        c.observaciones as observaciones, 
+        c.estatus as estatus, 
+        c.motivo_cancelacion as motivoCancelacion, 
+        DATE_FORMAT(c.fecha_creacion, '%Y-%m-%d %H:%i:%s') as fechaCreacion, 
+        p.nombre as pacienteNombre, 
+        p.primer_apellido as pacientePrimerApellido, 
+        p.segundo_apellido as pacienteSegundoApellido, 
+        p.email as pacienteEmail, 
+        m.nombre as medicoNombre, 
+        m.primer_apellido as medicoPrimerApellido, 
+        m.segundo_apellido as medicoSegundoApellido 
+        FROM cita c 
+        INNER JOIN paciente p ON c.id_paciente = p.id_paciente 
+        INNER JOIN medico m ON c.id_medico = m.id_medico 
+        <where>
+            <if test="idMedico != null and idMedico > 0">
+                AND c.id_medico = #{idMedico}
+            </if>
+            <if test="estatus != null and estatus != ''">
+                AND c.estatus = #{estatus}
+            </if>
+            <if test="criterio != null and criterio != ''">
+                AND (
+                p.nombre LIKE CONCAT('%', #{criterio}, '%') 
+                OR p.primer_apellido LIKE CONCAT('%', #{criterio}, '%') 
+                OR p.segundo_apellido LIKE CONCAT('%', #{criterio}, '%') 
+                OR p.email LIKE CONCAT('%', #{criterio}, '%')
+                )
+            </if>
+        </where>
+    </select>
     
-     <update id="modificarCita" parameterType="pojo.Cita">
+    <select id="buscarCitaPorId" resultType="pojo.Cita" parameterType="int">
+        SELECT id_cita as idCita, 
+        DATE_FORMAT(fecha_cita, '%Y-%m-%d') as fechaCita, 
+        hora_cita as horaCita, 
+        id_paciente as idPaciente, 
+        id_medico as idMedico, 
+        observaciones, 
+        estatus, 
+        motivo_cancelacion as motivoCancelacion, 
+        DATE_FORMAT(fecha_creacion, '%Y-%m-%d %H:%i:%s') as fechaCreacion 
+        FROM cita   
+        WHERE id_cita = #{idCita} 
+    </select>
+    
+    <update id="modificarCita" parameterType="pojo.Cita">
         UPDATE cita 
         <set>
             <if test="fechaCita != null and fechaCita != ''">
@@ -49,28 +101,56 @@
         WHERE id_cita = #{idCita} 
     </update>
     
-     <update id="cancelarCita" parameterType="pojo.Cita">
+    <update id="cancelarCita" parameterType="pojo.Cita">
         UPDATE cita 
         SET estatus = 'Cancelada', 
         motivo_cancelacion = #{motivoCancelacion} 
         WHERE id_cita = #{idCita} 
     </update>
     
+    <!-- CARD 29: Historial de citas del paciente (móvil) – SIN observaciones (RN-19) -->
     <select id="obtenerCitasPaciente" resultType="pojo.CitaMobil" parameterType="int">
-        SELECT c.id_cita              as idCita,
-               DATE_FORMAT(c.fecha_cita, '%d/%m/%Y') as fechaCita,
-               c.hora_cita            as horaCita,
-               c.id_paciente          as idPaciente,
-               c.id_medico            as idMedico,
-               c.estatus              as estatus,
-               c.motivo_cancelacion   as motivoCancelacion,
-               DATE_FORMAT(c.fecha_creacion, '%d/%m/%Y %H:%i') as fechaCreacion,
-               m.nombre               as medicoNombre,
-               m.primer_apellido      as medicoPrimerApellido,
-               m.segundo_apellido     as medicoSegundoApellido
+        SELECT c.id_cita              AS idCita,
+               DATE_FORMAT(c.fecha_cita, '%d/%m/%Y') AS fechaCita,
+               c.hora_cita            AS horaCita,
+               c.id_paciente          AS idPaciente,
+               c.id_medico            AS idMedico,
+               c.estatus              AS estatus,
+               c.motivo_cancelacion   AS motivoCancelacion,
+               DATE_FORMAT(c.fecha_creacion, '%d/%m/%Y %H:%i') AS fechaCreacion,
+               m.nombre               AS medicoNombre,
+               m.primer_apellido      AS medicoPrimerApellido,
+               m.segundo_apellido     AS medicoSegundoApellido
         FROM cita c
         INNER JOIN medico m ON c.id_medico = m.id_medico
         WHERE c.id_paciente = #{idPaciente}
+          AND c.estatus IN ('Cancelada', 'Asistida', 'Ausente')
         ORDER BY c.fecha_cita DESC, c.hora_cita DESC
     </select>
+    
+    <select id="proximaCitaPaciente" parameterType="int" resultType="pojo.CitaMobil">
+        SELECT
+            c.id_cita              AS idCita,
+            c.fecha_cita           AS fechaCita,
+            c.hora_cita            AS horaCita,
+            c.id_paciente          AS idPaciente,
+            c.id_medico            AS idMedico,
+            c.estatus,
+            c.motivo_cancelacion   AS motivoCancelacion,
+            c.fecha_creacion       AS fechaCreacion,
+            m.nombre               AS medicoNombre,
+            m.primer_apellido      AS medicoPrimerApellido,
+            m.segundo_apellido     AS medicoSegundoApellido
+        FROM cita c
+        INNER JOIN medico m ON m.id_medico = c.id_medico
+        WHERE c.id_paciente = #{idPaciente}
+          AND c.estatus IN ('Confirmada', 'Reagendada')
+          AND (
+                c.fecha_cita > CURDATE()
+                OR (c.fecha_cita = CURDATE() AND c.hora_cita >= CURTIME())
+          )
+        ORDER BY c.fecha_cita ASC, c.hora_cita ASC
+        LIMIT 1
+    </select>
+    
 </mapper>

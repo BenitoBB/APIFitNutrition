@@ -125,4 +125,44 @@ public class ConsultaWS {
 
         return respuesta;
     }
+
+    //T314 -  Buscar consultas de un paciente 
+        @Path("buscar/{idPaciente}")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Consulta> buscarConsultasPaciente(
+            @PathParam("idPaciente") String idPaciente) {
+
+        if (idPaciente == null || idPaciente.isEmpty()) {
+            throw new BadRequestException();
+        }
+
+        int id = Integer.parseInt(idPaciente);
+
+        return ConsultaImp.buscarConsultasPaciente(id);
+    }
+
+    @Path("cancelar/{idConsulta}")
+    @PUT
+    @Produces(MediaType.APPLICATION_JSON)
+    public Respuesta cancelarConsulta(
+    @PathParam("idConsulta") String idConsulta) {
+
+    Respuesta respuesta = new Respuesta();
+
+    if (idConsulta == null || idConsulta.isEmpty()) {
+
+        respuesta.setError(true);
+        respuesta.setMensaje(
+                "El idConsulta es obligatorio"
+        );
+
+        return respuesta;
+    }
+
+    int id = Integer.parseInt(idConsulta);
+
+    return ConsultaImp.cancelarConsulta(id);
+
+    }
 }

@@ -29,6 +29,11 @@ public class Consulta {
         this.observaciones = observaciones;
     }
 
+    public Consulta() {
+        
+    }
+
+
     public int getIdConsulta() {
         return idConsulta;
     }

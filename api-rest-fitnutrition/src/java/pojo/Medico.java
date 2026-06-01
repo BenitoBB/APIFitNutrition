@@ -1,6 +1,7 @@
 package pojo;
 
 public class Medico {
+    
     private int idMedico;
     private String nombre;
     private String primerApellido;

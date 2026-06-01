@@ -34,7 +34,28 @@
         )
 
     </insert>
-    
+
+    <select id="buscar-consultas-paciente"
+            parameterType="int"
+            resultType="pojo.Consulta">
+
+        SELECT
+        id_consulta AS idConsulta,
+        id_paciente AS idPaciente,
+        id_medico AS idMedico,
+        id_cita AS idCita,
+        fecha_consulta AS fechaConsulta,
+        peso,
+        talla,
+        imc,
+        id_dieta AS idDieta,
+        observaciones
+        FROM consulta
+        WHERE id_paciente = #{idPaciente}
+        ORDER BY fecha_consulta DESC
+
+    </select>
+
     <update id="modificar-consulta"
             parameterType="pojo.Consulta">
 
@@ -48,4 +69,15 @@
         WHERE id_consulta = #{idConsulta}
 
     </update>
+
+    <update id="cancelar-consulta"
+        parameterType="int">
+
+    UPDATE consulta
+    SET cancelada = 1
+    WHERE id_consulta = #{idConsulta}
+    AND cancelada = 0
+
+    </update>
+
 </mapper>

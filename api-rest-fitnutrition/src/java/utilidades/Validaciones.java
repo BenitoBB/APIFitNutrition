@@ -130,4 +130,13 @@ public class Validaciones {
             return false;
         }
     }
+
+    // Utilizado para Auth de Medico/Admin
+    public static boolean esAlfanumericoConLongitudMaxima(String campo, int longitudMaxima) {
+        if (campo == null) {
+            return false;
+        }
+        return campo.trim().matches("^[a-zA-Z0-9]{1," + longitudMaxima + "}$");
+    }
+
 }

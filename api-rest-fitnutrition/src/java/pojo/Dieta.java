@@ -19,6 +19,9 @@ public class Dieta {
         this.idMedico = idMedico;
     }
 
+    public Dieta() {
+    }
+
     public int getIdDieta() {
         return idDieta;
     }

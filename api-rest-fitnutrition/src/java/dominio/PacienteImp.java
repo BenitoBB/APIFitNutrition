@@ -1,14 +1,20 @@
 package dominio;
 
 import dto.RSAutenticacionPaciente;
+import dto.RSDietasPaciente;
 import dto.Respuesta;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import modelo.mybatis.MyBatisUtil;
 import org.apache.ibatis.session.SqlSession;
+
+import pojo.Dieta;
+import pojo.DietaPaciente;
 import pojo.Medico;
 import pojo.Paciente;
+import pojo.ProgresoPaciente;
 import utilidades.Constantes;
 import utilidades.Seguridad;
 import utilidades.Validaciones;
@@ -66,7 +72,6 @@ public class PacienteImp {
     }
 
     // ── Admin ────────────────────────────────────────────────────────────────
-
     public static Respuesta actualizarPaciente(Paciente paciente) {
         Respuesta respuesta = new Respuesta();
         respuesta.setError(true);
@@ -145,7 +150,7 @@ public class PacienteImp {
         }
         return respuesta;
     }
-    
+
     public static List<Paciente> buscarPacientes(String criterio, Integer idMedico) {
         List<Paciente> pacientes = null;
         SqlSession conexion = MyBatisUtil.getSession();
@@ -164,9 +169,8 @@ public class PacienteImp {
         }
         return pacientes;
     }
-    
+
     // ── Móvil ────────────────────────────────────────────────────────────────
-    
     public static RSAutenticacionPaciente loginPaciente(String email, String nip) {
         RSAutenticacionPaciente respuesta = new RSAutenticacionPaciente();
         respuesta.setError(true);
@@ -226,7 +230,7 @@ public class PacienteImp {
         }
         return perfil;
     }
-    
+
     public static Respuesta editarPerfilPaciente(Paciente paciente) {
         Respuesta respuesta = new Respuesta();
         respuesta.setError(true);
@@ -284,7 +288,7 @@ public class PacienteImp {
                     respuesta.setMensaje("El correo actual ingresado no es correcto.");
                     return respuesta;
                 }
-                
+
                 if (existente.getEmail().equalsIgnoreCase(nuevoEmail)) {
                     respuesta.setMensaje("El nuevo correo electrónico es igual al actual.");
                     return respuesta;
@@ -391,14 +395,13 @@ public class PacienteImp {
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
-
     private static boolean existePaciente(SqlSession conexion, int idPaciente) {
         return conexion.selectOne("paciente.obtenerPorId", idPaciente) != null;
     }
 
     private static boolean existeEmail(SqlSession conexion, String email, int idPaciente) {
         Map<String, Object> params = new HashMap<>();
-        params.put("email",      email);
+        params.put("email", email);
         params.put("idPaciente", idPaciente);
         int count = conexion.selectOne("paciente.existeEmail", params);
         return count > 0;
@@ -407,10 +410,133 @@ public class PacienteImp {
     private static String manejarErrorBD(Exception e) {
         String msg = e.getMessage();
         if (msg != null) {
-            if (msg.contains("uq_paciente_email"))    return "El correo electrónico ya está registrado.";
-            if (msg.contains("chk_paciente_telefono")) return "El teléfono debe contener exactamente 10 dígitos.";
-            if (msg.contains("fk_paciente_medico"))    return "El médico indicado no existe.";
+            if (msg.contains("uq_paciente_email")) {
+                return "El correo electrónico ya está registrado.";
+            }
+            if (msg.contains("chk_paciente_telefono")) {
+                return "El teléfono debe contener exactamente 10 dígitos.";
+            }
+            if (msg.contains("fk_paciente_medico")) {
+                return "El médico indicado no existe.";
+            }
         }
         return "Error inesperado en la base de datos.";
+    }
+
+    //T330 - Consultar dietas y progreso (app móvil)
+    public static List<ProgresoPaciente> obtenerProgresoPaciente(
+            int idPaciente) {
+
+        List<ProgresoPaciente> progreso = null;
+
+        SqlSession conexionBD = MyBatisUtil.getSession();
+
+        if (conexionBD != null) {
+
+            try {
+
+                progreso = conexionBD.selectList(
+                        "paciente.obtener-progreso-paciente",
+                        idPaciente
+                );
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
+
+            } finally {
+
+                conexionBD.close();
+            }
+        }
+
+        return progreso;
+    }
+
+    public static RSDietasPaciente obtenerDietasPaciente(int idPaciente) {
+        RSDietasPaciente response = null;
+        SqlSession conexionBD = MyBatisUtil.getSession();
+        if (conexionBD != null) {
+            try {
+                List<DietaPaciente> dietas = conexionBD.selectList(
+                        "paciente.obtener-dietas-paciente",
+                        idPaciente
+                );
+                if (dietas != null && !dietas.isEmpty()) {
+                    response = new RSDietasPaciente();
+                    List<DietaPaciente> historial = new ArrayList<>();
+
+                    for (DietaPaciente dieta : dietas) {
+                        if (dieta.isEsActual()) {
+                            response.setDietaActual(dieta);
+                        } else {
+                            historial.add(dieta);
+                        }
+                    }
+                    response.setHistorial(historial);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                conexionBD.close();
+            }
+        }
+        return response;
+    }
+    
+    
+    // ----------------------------------------------------------------
+    // Guardar (subir) fotografía del paciente
+    // ----------------------------------------------------------------
+    public static Respuesta guardarFotografia(int idPaciente, byte[] fotografia) {
+        Respuesta respuesta = new Respuesta();
+        respuesta.setError(true);
+ 
+        SqlSession conexionBD = MyBatisUtil.getSession();
+        if (conexionBD != null) {
+            try {
+                Paciente paciente = new Paciente();
+                paciente.setIdPaciente(idPaciente);
+                paciente.setFotografia(fotografia);
+ 
+                int filasAfectadas = conexionBD.update("paciente.guardar-fotografia", paciente);
+                conexionBD.commit();
+ 
+                if (filasAfectadas > 0) {
+                    respuesta.setError(false);
+                    respuesta.setMensaje("La fotografía del paciente ha sido guardada correctamente");
+                } else {
+                    respuesta.setMensaje("La fotografía del paciente no ha sido guardada, inténtelo más tarde");
+                }
+            } catch (Exception e) {
+                respuesta.setMensaje(e.getMessage());
+            } finally {
+                conexionBD.close();
+            }
+        } else {
+            respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+        }
+ 
+        return respuesta;
+    }
+ 
+    // ----------------------------------------------------------------
+    // Obtener fotografía del paciente (devuelve fotoBase64)
+    // ----------------------------------------------------------------
+    public static Paciente obtenerFotografia(int idPaciente) {
+        Paciente paciente = new Paciente();
+ 
+        SqlSession conexionBD = MyBatisUtil.getSession();
+        if (conexionBD != null) {
+            try {
+                paciente = conexionBD.selectOne("paciente.obtener-fotografia", idPaciente);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                conexionBD.close();
+            }
+        }
+ 
+        return paciente;
     }
 }

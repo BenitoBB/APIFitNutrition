@@ -23,13 +23,24 @@ public class Paciente {
     private byte[] fotografia;
     private String fotoBase64;
     
+    // Campos de visualización de dirección
+    private String calle;
+    private String numero;
+    private Integer idColonia;
+    private String nombreColonia;
+    private String codigoPostal;
+    private String ciudad;
+    private String estado;
+    private String direccionCompleta;
+    
     private int idMedico;
+    private String medico;
     private int estatus; // 1 = Activo, 0 = Inactivo
 
     public Paciente() {
     }
     
-    public Paciente(int idPaciente, String nombre, String primerApellido, String segundoApellido, String fechaNacimiento, String sexo, Double peso, Double estatura, Double talla, String email, String telefono, Integer idDomicilio, String codigoAcceso, byte[] fotografia, String fotoBase64, int idMedico, int estatus) {
+    public Paciente(int idPaciente, String nombre, String primerApellido, String segundoApellido, String fechaNacimiento, String sexo, Double peso, Double estatura, Double talla, String email, String telefono, Integer idDomicilio, String codigoAcceso, byte[] fotografia, String fotoBase64, int idMedico, String medico, int estatus) {
         this.idPaciente = idPaciente;
         this.nombre = nombre;
         this.primerApellido = primerApellido;
@@ -46,6 +57,7 @@ public class Paciente {
         this.fotografia = fotografia;
         this.fotoBase64 = fotoBase64;
         this.idMedico = idMedico;
+        this.medico = medico;
         this.estatus = estatus;
     }
 
@@ -177,11 +189,83 @@ public class Paciente {
         this.idMedico = idMedico;
     }
 
+    public String getMedico() {
+        return medico;
+    }
+
+    public void setMedico(String medico) {
+        this.medico = medico;
+    }
+    
     public int getEstatus() {
         return estatus;
     }
 
     public void setEstatus(int estatus) {
         this.estatus = estatus;
+    }
+
+    public String getCalle() {
+        return calle;
+    }
+
+    public void setCalle(String calle) {
+        this.calle = calle;
+    }
+
+    public String getNumero() {
+        return numero;
+    }
+
+    public void setNumero(String numero) {
+        this.numero = numero;
+    }
+
+    public Integer getIdColonia() {
+        return idColonia;
+    }
+
+    public void setIdColonia(Integer idColonia) {
+        this.idColonia = idColonia;
+    }
+
+    public String getNombreColonia() {
+        return nombreColonia;
+    }
+
+    public void setNombreColonia(String nombreColonia) {
+        this.nombreColonia = nombreColonia;
+    }
+
+    public String getCodigoPostal() {
+        return codigoPostal;
+    }
+
+    public void setCodigoPostal(String codigoPostal) {
+        this.codigoPostal = codigoPostal;
+    }
+
+    public String getCiudad() {
+        return ciudad;
+    }
+
+    public void setCiudad(String ciudad) {
+        this.ciudad = ciudad;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
+    public String getDireccionCompleta() {
+        return direccionCompleta;
+    }
+
+    public void setDireccionCompleta(String direccionCompleta) {
+        this.direccionCompleta = direccionCompleta;
     }
 }

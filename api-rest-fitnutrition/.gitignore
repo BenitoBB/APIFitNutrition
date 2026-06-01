@@ -1,4 +1,4 @@
-
-# Archivo de BD local (solo contexto)
+# Archivos locales (solo contexto/guía, no van al repo)
 src/java/modelo/mybatis/BDFitNutrition.sql
 src/java/modelo/mybatis/BD_Triggers_SP.sql
+src/java/modelo/mybatis/endpoints_postman.md

@@ -22,6 +22,7 @@ import utilidades.Validaciones;
  * @author julia
  */
 public class CitaImp {
+    
     public static Cita buscarCitaPorPacienteYFecha(int idPaciente, String fechaCita) {
         SqlSession conexionBD = MyBatisUtil.getSession();
         if (conexionBD != null) {
@@ -216,5 +217,68 @@ public class CitaImp {
         }
 
         return respuesta;
+    }
+
+    //T309 - Buscar y consultar citas
+    public static List<CitaDetalle> buscarCitas(String criterio, Integer idMedico, String estatus) {
+    List<CitaDetalle> citas = new ArrayList<>();
+    SqlSession conexionBD = MyBatisUtil.getSession();
+    if (conexionBD != null) {
+        try {
+            Map<String, Object> parametros = new HashMap<>();
+            parametros.put("criterio", (criterio != null && !criterio.trim().isEmpty()) ? criterio.trim() : null);
+            parametros.put("idMedico", (idMedico != null && idMedico > 0) ? idMedico : null);
+            parametros.put("estatus", (estatus != null && !estatus.trim().isEmpty()) ? estatus.trim() : null);
+            citas = conexionBD.selectList("cita.buscarCitas", parametros);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            conexionBD.close();
+        }
+    }
+    return citas;
+    }
+
+    public static Respuesta cancelarCita(Cita cita) {
+        Respuesta respuesta = new Respuesta();
+        respuesta.setError(true);
+
+        SqlSession conexionBD = MyBatisUtil.getSession();
+        if (conexionBD == null) {
+            respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+            return respuesta;
+        }
+        try {
+            int filasAfectadas = conexionBD.update("cita.cancelarCita", cita);
+            if (filasAfectadas > 0) {
+                conexionBD.commit();
+                respuesta.setError(false);
+                respuesta.setMensaje("Cita cancelada exitosamente.");
+            } else {
+                respuesta.setMensaje("No fue posible cancelar la cita.");
+            }
+        } catch (Exception e) {
+            conexionBD.rollback();
+            e.printStackTrace();
+            respuesta.setMensaje(Constantes.MSJ_ERROR_BD);
+        } finally {
+            conexionBD.close();
+        }
+        return respuesta;
+    }
+    
+    public static CitaMobil proximaCitaPaciente(int idPaciente) {
+        CitaMobil cita = null;
+        SqlSession conexionBD = MyBatisUtil.getSession();
+        if (conexionBD != null) {
+            try {
+                cita = conexionBD.selectOne("cita.proximaCitaPaciente", idPaciente);
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                conexionBD.close();
+            }
+        }
+        return cita;
     }
 }
