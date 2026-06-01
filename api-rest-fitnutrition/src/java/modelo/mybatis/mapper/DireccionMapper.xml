@@ -12,11 +12,14 @@
         WHERE c.codigo_postal = #{codigoPostal}
     </select>
     
-    <insert id="crear-direccion" parameterType="pojo.Direccion"
-            useGeneratedKeys="true" keyProperty="idDireccion">
+    <insert id="crear-direccion" parameterType="pojo.Direccion">
+        <selectKey keyProperty="idDireccion" resultType="int" order="AFTER">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
         INSERT INTO domicilio (calle, numero, id_colonia)
         VALUES (#{calle}, #{numero}, #{idColonia})
     </insert>
+
 
     <update id="editar" parameterType="pojo.Direccion">
         UPDATE domicilio SET
