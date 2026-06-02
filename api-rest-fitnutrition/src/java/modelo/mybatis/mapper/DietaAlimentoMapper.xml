@@ -9,6 +9,7 @@
     <insert id="agregarAlimento" parameterType="map">
         INSERT INTO dieta_alimento (id_dieta, id_categoria, id_alimento, cantidad)
         VALUES (#{idDieta}, #{idCategoria}, #{idAlimento}, #{cantidad})
+        ON DUPLICATE KEY UPDATE cantidad = VALUES(cantidad)
     </insert>
 
     <!-- T319: Elimina un alimento de una categoría; TRG-5/6/7 recalculan total_calorias -->
@@ -18,5 +19,20 @@
           AND id_categoria = #{idCategoria}
           AND id_alimento  = #{idAlimento}
     </delete>
+
+    <update id="recalcularDietasPorAlimento" parameterType="int">
+        UPDATE dieta d
+        SET d.total_calorias = IFNULL((
+            SELECT SUM(a.calorias_porcion * da.cantidad)
+            FROM dieta_alimento da
+            INNER JOIN alimento a ON a.id_alimento = da.id_alimento
+            WHERE da.id_dieta = d.id_dieta
+        ), 0)
+        WHERE d.id_dieta IN (
+            SELECT DISTINCT da2.id_dieta
+            FROM dieta_alimento da2
+            WHERE da2.id_alimento = #{idAlimento}
+        )
+    </update>
 
 </mapper>

@@ -11,6 +11,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import pojo.Consulta;
 
@@ -140,6 +141,21 @@ public class ConsultaWS {
         int id = Integer.parseInt(idPaciente);
 
         return ConsultaImp.buscarConsultasPaciente(id);
+    }
+
+    @Path("buscar")
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<Consulta> buscarConsultas(
+            @QueryParam("idPaciente") Integer idPaciente,
+            @QueryParam("criterio") String criterio,
+            @QueryParam("idMedico") Integer idMedico) {
+
+        if (idPaciente != null && idPaciente > 0) {
+            return ConsultaImp.buscarConsultasPaciente(idPaciente);
+        }
+
+        return ConsultaImp.buscarConsultas(criterio, idMedico);
     }
 
     @Path("cancelar/{idConsulta}")

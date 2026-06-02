@@ -116,11 +116,7 @@ public class AlimentoImp {
 
             // 3. Llamar a SP-2 si las calorías cambiaron
             if (caloriasCambiaron) {
-                java.sql.Connection conn = conexionBD.getConnection();
-                java.sql.CallableStatement cs = conn.prepareCall("{CALL sp_recalcular_calorias_por_alimento(?)}");
-                cs.setInt(1, alimentoModificado.getIdAlimento());
-                cs.execute();
-                cs.close();
+                conexionBD.update("dietaAlimento.recalcularDietasPorAlimento", alimentoModificado.getIdAlimento());
             }
 
             conexionBD.commit();

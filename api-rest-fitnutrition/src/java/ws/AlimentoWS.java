@@ -22,7 +22,7 @@ import pojo.Alimento;
 import utilidades.Validaciones;
 
 /**
- * Endpoint REST para la gestión de alimentos.
+ * Endpoint REST para la gestiÃ³n de alimentos.
  * Base path: /api/alimento
  */
 @Path("alimento")
@@ -30,8 +30,8 @@ public class AlimentoWS {
 
     /**
      * POST /api/alimento/registrar
-     * Registra un nuevo alimento en el catálogo.
-     * Valida que la porción sea válida y las calorías sean mayores a 0.
+     * Registra un nuevo alimento en el catÃ¡logo.
+     * Valida que la porciÃ³n sea vÃ¡lida y las calorÃ­as sean mayores a 0.
      */
     @POST
     @Path("registrar")
@@ -47,58 +47,58 @@ public class AlimentoWS {
         }
 
         if (Validaciones.esVacio(alimento.getPorcion())) {
-            return new Respuesta(true, "La porción del alimento es obligatoria.");
+            return new Respuesta(true, "La porciÃ³n del alimento es obligatoria.");
         }
 
-        // Validación de porciones permitidas (case-insensitive)
+        // ValidaciÃ³n de porciones permitidas (case-insensitive)
         List<String> porcionesValidas = Arrays.asList("Pieza", "Gramos", "Porciones", "Mililitros");
         boolean porcionValida = false;
         
         for (String p : porcionesValidas) {
             if (p.equalsIgnoreCase(alimento.getPorcion().trim())) {
-                alimento.setPorcion(p); // Se estandariza como se guardará
+                alimento.setPorcion(p); // Se estandariza como se guardarÃ¡
                 porcionValida = true;
                 break;
             }
         }
         
         if (!porcionValida) {
-            return new Respuesta(true, "La porción ingresada no es válida. Opciones permitidas: Pieza, Gramos, Porciones, Mililitros.");
+            return new Respuesta(true, "La porciÃ³n ingresada no es vÃ¡lida. Opciones permitidas: Pieza, Gramos, Porciones, Mililitros.");
         }
 
         if (alimento.getCaloriasPorcion() <= 0) {
-            return new Respuesta(true, "Las calorías por porción deben ser mayores a 0.");
+            return new Respuesta(true, "Las calorÃ­as por porciÃ³n deben ser mayores a 0.");
         }
 
         return AlimentoImp.registrarAlimento(alimento);
     }
 
-    // ── T322: Buscar alimentos ────────────────────────────────────────────────
+    // â”€â”€ T322: Buscar alimentos â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /**
      * GET /api/alimento/buscar?nombre={texto}
      * Busca alimentos por nombre (coincidencias parciales).
-     * Requiere mínimo 2 caracteres.
+     * Requiere mÃ­nimo 2 caracteres.
      */
     @GET
     @Path("buscar")
     @Produces(MediaType.APPLICATION_JSON)
     public Response buscar(@QueryParam("nombre") String nombre) {
-        if (Validaciones.esVacio(nombre) || nombre.trim().length() < 2) {
-            return Response.ok(new Respuesta(true, "La búsqueda debe tener al menos 2 caracteres.")).build();
+        if (nombre != null && nombre.trim().length() == 1) {
+            return Response.ok(new Respuesta(true, "La busqueda debe tener al menos 2 caracteres.")).build();
         }
 
-        List<Alimento> resultado = AlimentoImp.buscarPorNombre(nombre.trim());
+        List<Alimento> resultado = AlimentoImp.buscarPorNombre(nombre != null ? nombre.trim() : "");
         GenericEntity<List<Alimento>> entity = new GenericEntity<List<Alimento>>(resultado) {};
         return Response.ok(entity).build();
     }
 
-    // ── T323: Editar alimento ─────────────────────────────────────────────────
+    // â”€â”€ T323: Editar alimento â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /**
      * PUT /api/alimento/editar
      * Edita los datos de un alimento.
-     * Si las calorías cambian, se propaga el cambio a todas las dietas asociadas.
+     * Si las calorÃ­as cambian, se propaga el cambio a todas las dietas asociadas.
      */
     @PUT
     @Path("editar")
@@ -114,10 +114,10 @@ public class AlimentoWS {
         }
 
         if (Validaciones.esVacio(alimento.getPorcion())) {
-            return new Respuesta(true, "La porción del alimento es obligatoria.");
+            return new Respuesta(true, "La porciÃ³n del alimento es obligatoria.");
         }
 
-        // Validación de porciones permitidas (case-insensitive)
+        // ValidaciÃ³n de porciones permitidas (case-insensitive)
         List<String> porcionesValidas = Arrays.asList("Pieza", "Gramos", "Porciones", "Mililitros");
         boolean porcionValida = false;
         
@@ -130,11 +130,11 @@ public class AlimentoWS {
         }
         
         if (!porcionValida) {
-            return new Respuesta(true, "La porción ingresada no es válida. Opciones permitidas: Pieza, Gramos, Porciones, Mililitros.");
+            return new Respuesta(true, "La porciÃ³n ingresada no es vÃ¡lida. Opciones permitidas: Pieza, Gramos, Porciones, Mililitros.");
         }
 
         if (alimento.getCaloriasPorcion() <= 0) {
-            return new Respuesta(true, "Las calorías por porción deben ser mayores a 0.");
+            return new Respuesta(true, "Las calorÃ­as por porciÃ³n deben ser mayores a 0.");
         }
 
         return AlimentoImp.editarAlimento(alimento);

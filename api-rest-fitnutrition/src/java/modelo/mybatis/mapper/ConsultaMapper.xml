@@ -25,7 +25,14 @@
         #{idPaciente},
         #{idMedico},
         #{idCita},
-        #{fechaConsulta},
+        COALESCE(
+            (
+                SELECT TIMESTAMP(ci.fecha_cita, ci.hora_cita)
+                FROM cita ci
+                WHERE ci.id_cita = #{idCita}
+            ),
+            #{fechaConsulta}
+        ),
         #{peso},
         #{talla},
         #{imc},
@@ -35,24 +42,98 @@
 
     </insert>
 
+    <update id="marcar-cita-asistida" parameterType="int">
+        UPDATE cita
+        SET estatus = 'Asistida'
+        WHERE id_cita = #{idCita}
+          AND estatus IN ('Confirmada', 'Reagendada')
+    </update>
+
     <select id="buscar-consultas-paciente"
             parameterType="int"
             resultType="pojo.Consulta">
 
         SELECT
-        id_consulta AS idConsulta,
-        id_paciente AS idPaciente,
-        id_medico AS idMedico,
-        id_cita AS idCita,
-        fecha_consulta AS fechaConsulta,
-        peso,
-        talla,
-        imc,
-        id_dieta AS idDieta,
-        observaciones
-        FROM consulta
-        WHERE id_paciente = #{idPaciente}
-        ORDER BY fecha_consulta DESC
+        c.id_consulta AS idConsulta,
+        c.id_paciente AS idPaciente,
+        c.id_medico AS idMedico,
+        c.id_cita AS idCita,
+        DATE_FORMAT(
+            CASE
+                WHEN c.id_cita IS NOT NULL AND ci.id_cita IS NOT NULL
+                    THEN TIMESTAMP(ci.fecha_cita, ci.hora_cita)
+                ELSE c.fecha_consulta
+            END,
+            '%Y-%m-%d %H:%i:%s'
+        ) AS fechaConsulta,
+        c.peso,
+        c.talla,
+        c.imc,
+        c.id_dieta AS idDieta,
+        d.nombre_dieta AS nombreDieta,
+        IFNULL(c.cancelada, 0) AS cancelada,
+        c.observaciones
+        FROM consulta c
+        LEFT JOIN cita ci ON ci.id_cita = c.id_cita
+        LEFT JOIN dieta d ON d.id_dieta = c.id_dieta
+        WHERE c.id_paciente = #{idPaciente}
+        ORDER BY
+        CASE
+            WHEN c.id_cita IS NOT NULL AND ci.id_cita IS NOT NULL
+                THEN TIMESTAMP(ci.fecha_cita, ci.hora_cita)
+            ELSE c.fecha_consulta
+        END DESC
+
+    </select>
+
+    <select id="buscar-consultas"
+            parameterType="map"
+            resultType="pojo.Consulta">
+
+        SELECT
+        c.id_consulta AS idConsulta,
+        c.id_paciente AS idPaciente,
+        c.id_medico AS idMedico,
+        c.id_cita AS idCita,
+        DATE_FORMAT(
+            CASE
+                WHEN c.id_cita IS NOT NULL AND ci.id_cita IS NOT NULL
+                    THEN TIMESTAMP(ci.fecha_cita, ci.hora_cita)
+                ELSE c.fecha_consulta
+            END,
+            '%Y-%m-%d %H:%i:%s'
+        ) AS fechaConsulta,
+        c.peso,
+        c.talla,
+        c.imc,
+        c.id_dieta AS idDieta,
+        d.nombre_dieta AS nombreDieta,
+        IFNULL(c.cancelada, 0) AS cancelada,
+        c.observaciones
+        FROM consulta c
+        LEFT JOIN cita ci ON ci.id_cita = c.id_cita
+        INNER JOIN paciente p ON p.id_paciente = c.id_paciente
+        LEFT JOIN dieta d ON d.id_dieta = c.id_dieta
+        <where>
+            <if test="idMedico != null and idMedico > 0">
+                AND c.id_medico = #{idMedico}
+            </if>
+            <if test="criterio != null and criterio != ''">
+                AND (
+                p.nombre LIKE CONCAT('%', #{criterio}, '%')
+                OR p.primer_apellido LIKE CONCAT('%', #{criterio}, '%')
+                OR p.segundo_apellido LIKE CONCAT('%', #{criterio}, '%')
+                OR CONCAT_WS(' ', p.nombre, p.primer_apellido, p.segundo_apellido)
+                   LIKE CONCAT('%', #{criterio}, '%')
+                )
+            </if>
+        </where>
+        ORDER BY
+        CASE
+            WHEN c.id_cita IS NOT NULL AND ci.id_cita IS NOT NULL
+                THEN TIMESTAMP(ci.fecha_cita, ci.hora_cita)
+            ELSE c.fecha_consulta
+        END DESC
 
     </select>
 
