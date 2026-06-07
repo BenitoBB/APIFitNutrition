@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="inicio">
+
+    <select id="resumen-paciente" parameterType="int" resultType="pojo.ResumenPaciente">
+        SELECT
+            p.id_paciente                                                    AS idPaciente,
+            p.nombre,
+            p.primer_apellido                                                AS primerApellido,
+            p.segundo_apellido                                               AS segundoApellido,
+            CONCAT_WS(' ', m.nombre, m.primer_apellido, m.segundo_apellido) AS medico,
+            c.peso                                                           AS pesoActual,
+            c.talla,
+            c.imc                                                            AS imcActual,
+            CASE
+                WHEN c.imc IS NULL        THEN 'Sin datos'
+                WHEN c.imc &lt; 18.5     THEN 'Bajo peso'
+                WHEN c.imc &lt; 25.0     THEN 'Normal'
+                WHEN c.imc &lt; 30.0     THEN 'Sobrepeso'
+                ELSE                          'Obesidad'
+            END AS clasificacionImc
+        FROM paciente p
+        INNER JOIN medico m ON m.id_medico = p.id_medico
+        LEFT JOIN consulta c ON c.id_consulta = (
+            SELECT id_consulta FROM consulta
+            WHERE id_paciente = #{idPaciente}
+            ORDER BY fecha_consulta DESC
+            LIMIT 1
+        )
+        WHERE p.id_paciente = #{idPaciente}
+    </select>
+
+    <select id="proxima-cita" parameterType="int" resultType="pojo.ProximaCita">
+        SELECT
+            ci.id_cita                                                       AS idCita,
+            DATE_FORMAT(ci.fecha_cita, '%d/%m/%Y')                          AS fechaCita,
+            DATE_FORMAT(ci.hora_cita,  '%H:%i')                             AS horaCita,
+            CONCAT_WS(' ', m.nombre, m.primer_apellido, m.segundo_apellido) AS medico,
+            ci.estatus
+        FROM cita ci
+        INNER JOIN medico m ON m.id_medico = ci.id_medico
+        WHERE ci.id_paciente = #{idPaciente}
+          AND ci.estatus     = 'Confirmada'
+          AND ci.fecha_cita  >= CURDATE()
+        ORDER BY ci.fecha_cita ASC, ci.hora_cita ASC
+        LIMIT 1
+    </select>
+
+    <select id="progreso-peso" parameterType="int" resultType="pojo.PuntoPeso">
+        SELECT
+            DATE_FORMAT(fecha_consulta, '%d/%m/%Y') AS fechaConsulta,
+            peso,
+            imc,
+            CASE
+                WHEN imc IS NULL     THEN 'Sin datos'
+                WHEN imc &lt; 18.5  THEN 'Bajo peso'
+                WHEN imc &lt; 25.0  THEN 'Normal'
+                WHEN imc &lt; 30.0  THEN 'Sobrepeso'
+                ELSE                     'Obesidad'
+            END AS clasificacionImc
+        FROM consulta
+        WHERE id_paciente = #{idPaciente}
+        ORDER BY fecha_consulta DESC
+        LIMIT 5
+    </select>
+    
+    <resultMap id="ResumenDietaInicioMap" type="pojo.ResumenDietaInicio">
+        <result property="nombreDieta"   column="nombre_dieta"/>
+        <result property="totalCalorias" column="total_calorias"/>
+        <collection property="categorias"
+                    column="id_dieta"
+                    select="inicio.calorias-por-categoria"/>
+    </resultMap>
+
+    <select id="dieta-resumen" parameterType="int" resultMap="ResumenDietaInicioMap">
+        SELECT
+            d.id_dieta       AS id_dieta,
+            d.nombre_dieta   AS nombre_dieta,
+            d.total_calorias AS total_calorias
+        FROM consulta c
+        INNER JOIN dieta d ON d.id_dieta = c.id_dieta
+        WHERE c.id_paciente = #{idPaciente}
+          AND c.id_dieta IS NOT NULL
+          AND c.id_dieta = (
+              SELECT id_dieta FROM consulta
+              WHERE id_paciente = #{idPaciente}
+                AND id_dieta IS NOT NULL
+              ORDER BY fecha_consulta DESC
+              LIMIT 1
+          )
+        LIMIT 1
+    </select>
+
+    <select id="calorias-por-categoria" parameterType="int" resultType="pojo.CaloriasPorCategoria">
+        SELECT
+            ch.nombre_categoria                   AS nombreCategoria,
+            SUM(da.cantidad * a.calorias_porcion) AS caloriasCategoria
+        FROM categoria_horario ch
+        INNER JOIN dieta_alimento da ON da.id_categoria = ch.id_categoria
+                                    AND da.id_dieta     = ch.id_dieta
+        INNER JOIN alimento a        ON a.id_alimento   = da.id_alimento
+        WHERE ch.id_dieta = #{idDieta}
+        GROUP BY ch.id_categoria, ch.nombre_categoria
+        ORDER BY ch.id_categoria
+    </select>
+
+    <select id="ultima-consulta" parameterType="int" resultType="pojo.UltimaConsulta">
+        SELECT
+            c.id_consulta                                    AS idConsulta,
+            DATE_FORMAT(c.fecha_consulta, '%d/%m/%Y %H:%i') AS fechaConsulta,
+            c.peso,
+            c.talla,
+            c.imc,
+            CASE
+                WHEN c.imc IS NULL     THEN 'Sin datos'
+                WHEN c.imc &lt; 18.5  THEN 'Bajo peso'
+                WHEN c.imc &lt; 25.0  THEN 'Normal'
+                WHEN c.imc &lt; 30.0  THEN 'Sobrepeso'
+                ELSE                       'Obesidad'
+            END                            AS clasificacionImc,
+            d.nombre_dieta                 AS nombreDieta,
+            c.observaciones
+        FROM consulta c
+        LEFT JOIN dieta d ON d.id_dieta = c.id_dieta
+        WHERE c.id_paciente = #{idPaciente}
+        ORDER BY c.fecha_consulta DESC
+        LIMIT 1
+    </select>
+
+</mapper>
