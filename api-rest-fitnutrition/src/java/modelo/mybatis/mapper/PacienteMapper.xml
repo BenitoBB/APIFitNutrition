@@ -31,6 +31,7 @@
             fecha_nacimiento = #{fechaNacimiento},
             sexo             = #{sexo},
             telefono         = #{telefono},
+            email            = #{email},
             id_domicilio     = #{idDomicilio},
             id_medico        = #{idMedico},
             estatus          = #{estatus}

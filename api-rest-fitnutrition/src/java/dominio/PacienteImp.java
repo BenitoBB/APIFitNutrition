@@ -95,6 +95,17 @@ public class PacienteImp {
                     return respuesta;
                 }
 
+                String errorCorreo = Validaciones.validarCorreo(paciente.getEmail(), true);
+                if (errorCorreo != null) {
+                    respuesta.setMensaje(errorCorreo);
+                    return respuesta;
+                }
+
+                if (existeEmail(conexion, paciente.getEmail(), paciente.getIdPaciente())) {
+                    respuesta.setMensaje("El correo electrónico ya se encuentra registrado por otro paciente.");
+                    return respuesta;
+                }
+
                 int filasAfectadas = conexion.update("paciente.actualizar", paciente);
 
                 if (filasAfectadas > 0) {
