@@ -262,16 +262,16 @@
     <!-- ─── Queries ───────────────────────────────────────────────── -->
 
     <select id="obtener-dietas-paciente"
-            parameterType="int"
-            resultMap="DietaPacienteMap">
+        parameterType="int"
+        resultMap="DietaPacienteMap">
         SELECT
-            d.id_dieta       AS id_dieta,
-            d.nombre_dieta   AS nombre_dieta,
-            d.total_calorias AS total_calorias,
-            d.observaciones  AS observaciones,
-            d.id_medico      AS id_medico,
+            d.id_dieta         AS id_dieta,
+            d.nombre_dieta     AS nombre_dieta,
+            d.total_calorias   AS total_calorias,
+            d.observaciones    AS observaciones,
+            ultima.id_medico   AS id_medico,    -- médico asignador, no creador
             CONCAT_WS(' ', m.nombre, m.primer_apellido, m.segundo_apellido) AS medico,
-            MAX(c.fecha_consulta) AS ultima_consulta,
+            ultima.fecha_consulta AS ultima_consulta,
             CASE
                 WHEN d.id_dieta = (
                     SELECT id_dieta
@@ -283,20 +283,21 @@
                 ) THEN 1
                 ELSE 0
             END AS es_actual
-        FROM consulta c
-        INNER JOIN dieta d  ON c.id_dieta  = d.id_dieta
-        INNER JOIN medico m ON m.id_medico = d.id_medico
-        WHERE c.id_paciente = #{idPaciente}
-        GROUP BY
-            d.id_dieta,
-            d.nombre_dieta,
-            d.total_calorias,
-            d.observaciones,
-            d.id_medico,
-            m.nombre,
-            m.primer_apellido,
-            m.segundo_apellido
-        ORDER BY es_actual DESC, ultima_consulta DESC
+        FROM (
+            SELECT c1.id_dieta, c1.id_medico, c1.fecha_consulta
+            FROM consulta c1
+            WHERE c1.id_paciente = #{idPaciente}
+              AND c1.id_dieta IS NOT NULL
+              AND c1.fecha_consulta = (
+                  SELECT MAX(c2.fecha_consulta)
+                  FROM consulta c2
+                  WHERE c2.id_paciente = c1.id_paciente
+                    AND c2.id_dieta    = c1.id_dieta
+              )
+        ) ultima
+        INNER JOIN dieta  d ON d.id_dieta  = ultima.id_dieta
+        INNER JOIN medico m ON m.id_medico = ultima.id_medico
+        ORDER BY es_actual DESC, ultima.fecha_consulta DESC
     </select>
 
     <select id="obtener-categorias-dieta"

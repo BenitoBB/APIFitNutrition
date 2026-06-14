@@ -478,10 +478,9 @@ public class PacienteImp {
                         "paciente.obtener-dietas-paciente",
                         idPaciente
                 );
+                response = new RSDietasPaciente();
                 if (dietas != null && !dietas.isEmpty()) {
-                    response = new RSDietasPaciente();
                     List<DietaPaciente> historial = new ArrayList<>();
-
                     for (DietaPaciente dieta : dietas) {
                         if (dieta.isEsActual()) {
                             response.setDietaActual(dieta);
@@ -490,9 +489,13 @@ public class PacienteImp {
                         }
                     }
                     response.setHistorial(historial);
+                } else {
+                    response.setDietaActual(null);
+                    response.setHistorial(new ArrayList<>());
                 }
             } catch (Exception e) {
                 e.printStackTrace();
+                response = null;
             } finally {
                 conexionBD.close();
             }
