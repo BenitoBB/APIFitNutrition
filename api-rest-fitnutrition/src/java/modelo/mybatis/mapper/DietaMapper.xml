@@ -37,6 +37,12 @@
         WHERE d.id_dieta = #{idDieta}
     </select>
 
+    <select id="contarPacientesAsignados" parameterType="int" resultType="int">
+        SELECT COUNT(DISTINCT id_paciente)
+        FROM consulta
+        WHERE id_dieta = #{idDieta}
+    </select>
+
     <!-- T319: Modifica nombre y/u observaciones de una dieta -->    
     <update id="modificarDieta" parameterType="pojo.Dieta">
         UPDATE dieta

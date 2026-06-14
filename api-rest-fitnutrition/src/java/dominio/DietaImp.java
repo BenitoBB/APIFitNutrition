@@ -7,9 +7,6 @@ package dominio;
 import dto.RQAlimentoEnCategoria;
 import dto.RQModificarDieta;
 import dto.Respuesta;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -181,20 +178,11 @@ public class DietaImp {
         }
 
         try {
-            // 1. SP-3: validar que la dieta tiene 0 o 1 paciente asignado (RN-13)
-            Connection conn = conexionBD.getConnection();
-            CallableStatement cs = conn.prepareCall("{CALL sp_validar_edicion_dieta(?)}");
-            cs.setInt(1, rq.getIdDieta());
-            try {
-                cs.execute();
-            } catch (SQLException sqlEx) {
-                if ("45001".equals(sqlEx.getSQLState())) {
-                    respuesta.setMensaje("Dieta no editable: asignada a más de un paciente.");
-                    return respuesta;
-                }
-                throw sqlEx;
-            } finally {
-                cs.close();
+            // 1. RN-13: validar que la dieta tiene 0 o 1 paciente asignado.
+            Integer pacientesAsignados = conexionBD.selectOne("dieta.contarPacientesAsignados", rq.getIdDieta());
+            if (pacientesAsignados != null && pacientesAsignados > 1) {
+                respuesta.setMensaje("Dieta no editable: asignada a mas de un paciente.");
+                return respuesta;
             }
 
             // 2. UPDATE datos básicos si se envían (nombre y/u observaciones)
@@ -281,6 +269,12 @@ public class DietaImp {
         }
 
         try {
+            Integer pacientesAsignados = conexionBD.selectOne("dieta.contarPacientesAsignados", idDieta);
+            if (pacientesAsignados != null && pacientesAsignados > 1) {
+                respuesta.setMensaje("La dieta esta asignada a mas de un paciente y no puede eliminarse.");
+                return respuesta;
+            }
+
             int filasAfectadas = conexionBD.delete("dieta.eliminarDieta", idDieta);
             if (filasAfectadas > 0) {
                 conexionBD.commit();

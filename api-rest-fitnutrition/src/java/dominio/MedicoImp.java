@@ -14,6 +14,8 @@ import utilidades.Validaciones;
 
 public class MedicoImp {
 
+    private static final String CEDULA_ADMINISTRADOR = "NOAPLICA";
+
     public static Respuesta registrarMedico(Medico medico) {
         Respuesta respuesta = new Respuesta();
         respuesta.setError(true);
@@ -27,7 +29,9 @@ public class MedicoImp {
                     return respuesta;
                 }
 
-                if (existeCedula(conexion, medico.getCedulaProfesional(), 0)) {
+                normalizarCedulaAdministrador(medico);
+
+                if (medico.getEsAdministrador() == 0 && existeCedula(conexion, medico.getCedulaProfesional(), 0)) {
                     respuesta.setMensaje("La cédula profesional ya se encuentra registrada.");
                     return respuesta;
                 }
@@ -41,6 +45,7 @@ public class MedicoImp {
                     conexion.commit();
                     respuesta.setError(false);
                     respuesta.setMensaje("Médico registrado correctamente.");
+                    respuesta.setValor(medico.getIdMedico());
                 } else {
                     respuesta.setMensaje("No se pudo registrar al médico.");
                 }
@@ -75,7 +80,9 @@ public class MedicoImp {
                     return respuesta;
                 }
 
-                if (existeCedula(conexion, medico.getCedulaProfesional(), medico.getIdMedico())) {
+                normalizarCedulaAdministrador(medico);
+
+                if (medico.getEsAdministrador() == 0 && existeCedula(conexion, medico.getCedulaProfesional(), medico.getIdMedico())) {
                     respuesta.setMensaje("La cédula profesional ya está registrada por otro médico.");
                     return respuesta;
                 }
@@ -280,11 +287,20 @@ public class MedicoImp {
     }
 
     private static boolean existeCedula(SqlSession conexion, String cedula, int idMedico) {
+        if (cedula == null || cedula.trim().isEmpty()) {
+            return false;
+        }
         Map<String, Object> params = new HashMap<>();
         params.put("cedulaProfesional", cedula);
         params.put("idMedico",          idMedico);
         int count = conexion.selectOne("medico.existeCedula", params);
         return count > 0;
+    }
+
+    private static void normalizarCedulaAdministrador(Medico medico) {
+        if (medico != null && medico.getEsAdministrador() == 1) {
+            medico.setCedulaProfesional(CEDULA_ADMINISTRADOR);
+        }
     }
 
     private static String manejarErrorBD(Exception e) {
