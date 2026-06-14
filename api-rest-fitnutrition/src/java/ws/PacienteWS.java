@@ -138,18 +138,16 @@ public class PacienteWS {
     @Path("dietas/{id}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public RSDietasPaciente obtenerDietasPaciente(
-            @PathParam("id") String id) {
-
+    public RSDietasPaciente obtenerDietasPaciente(@PathParam("id") String id) {
         if (id == null || id.isEmpty()) {
             throw new BadRequestException();
         }
-
-        int idPaciente = Integer.parseInt(id);
-
-        return  PacienteImp.obtenerDietasPaciente(
-                idPaciente
-        );
+        try {
+            int idPaciente = Integer.parseInt(id);
+            return PacienteImp.obtenerDietasPaciente(idPaciente);
+        } catch (NumberFormatException e) {
+            throw new BadRequestException();
+        }
     }
     
     @Path("subir-fotografia/{idPaciente}")
